@@ -1,0 +1,519 @@
+/* ---------- App shell ---------- */
+.app {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 12px 16px 32px;
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+}
+
+.app-header {
+  padding: 8px 0 14px;
+}
+
+.app-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.app-logo {
+  font-size: 1.7rem;
+  color: var(--accent);
+}
+
+/* ---------- Layout ----------
+   Mobile: single column (board first, then moves, then import).
+   Desktop: two columns; in RTL the first column (board) sits on the right. */
+.layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (min-width: 900px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 24px;
+  }
+  .app-title {
+    font-size: 1.6rem;
+  }
+}
+
+.board-column,
+.side-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* ---------- Board ---------- */
+.board-wrap {
+  display: flex;
+  justify-content: center;
+}
+
+.board-square {
+  position: relative;
+  width: 100%;
+  /* Keep the whole board (plus controls) visible on landscape screens. */
+  max-width: min(100%, 78vh);
+  touch-action: manipulation;
+  /* Files a-h must always run left→right regardless of the page direction. */
+  direction: ltr;
+}
+
+.board-square .promo-card {
+  direction: rtl;
+}
+
+@media (min-width: 900px) {
+  .board-square {
+    max-width: min(100%, 74vh, 720px);
+  }
+}
+
+/* ---------- Status ---------- */
+.status-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: min(100%, 78vh);
+  margin: 0 auto;
+}
+
+@media (min-width: 900px) {
+  .status-block {
+    max-width: min(100%, 74vh, 720px);
+  }
+}
+
+.player-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-weight: 600;
+}
+
+.player-chip.is-active {
+  border-color: var(--accent);
+}
+
+.player-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid #000;
+  flex: none;
+}
+
+.player-dot-w {
+  background: #f1f1f1;
+}
+
+.player-dot-b {
+  background: #262522;
+  border-color: #6b6962;
+}
+
+.player-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status-banner {
+  padding: 8px 12px;
+  text-align: center;
+  border-radius: var(--radius);
+  background: var(--bg-elev-2);
+  font-weight: 600;
+}
+
+.status-check {
+  background: rgba(229, 83, 75, 0.18);
+  color: #ff8d86;
+}
+
+.status-end {
+  background: rgba(224, 179, 65, 0.16);
+  color: var(--warn);
+}
+
+.game-meta {
+  margin: 0;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.fen-details {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.fen-details summary {
+  cursor: pointer;
+  user-select: none;
+}
+
+.fen-code {
+  display: block;
+  margin-top: 6px;
+  padding: 8px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  word-break: break-all;
+  user-select: all;
+  text-align: left;
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 14px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, opacity 0.12s;
+}
+
+.btn:hover:not(:disabled) {
+  background: #34332e;
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-icon {
+  flex: 1;
+  padding: 8px;
+}
+
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #10200a;
+  font-weight: 700;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.btn-ghost {
+  background: transparent;
+}
+
+/* Mirrors direction-sensitive icons so they match the RTL reading order. */
+.mirror {
+  display: inline-flex;
+  transform: scaleX(-1);
+}
+
+/* ---------- Controls ---------- */
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: min(100%, 78vh);
+  margin: 0 auto;
+}
+
+@media (min-width: 900px) {
+  .controls {
+    max-width: min(100%, 74vh, 720px);
+  }
+}
+
+.controls-row {
+  display: flex;
+  gap: 8px;
+}
+
+.controls-secondary .btn {
+  flex: 1;
+  font-size: 0.9rem;
+  padding-inline: 8px;
+}
+
+/* ---------- Panels ---------- */
+.panel {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+}
+
+.panel-title {
+  font-size: 1.05rem;
+  margin-bottom: 10px;
+}
+
+/* ---------- Move list ---------- */
+.moves-scroll {
+  max-height: 260px;
+  overflow-y: auto;
+  position: relative;
+  overscroll-behavior: contain;
+}
+
+@media (min-width: 900px) {
+  .moves-scroll {
+    max-height: 340px;
+  }
+}
+
+.moves-table {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.move-row {
+  display: grid;
+  grid-template-columns: 44px 1fr 1fr;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 0;
+}
+
+.move-row:nth-child(odd) {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.move-num {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  text-align: center;
+  font-family: var(--mono);
+}
+
+.move-cell {
+  display: block;
+  min-height: 34px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  text-align: left;
+  font-family: var(--mono);
+  font-size: 0.95rem;
+}
+
+.move-btn {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  position: relative;
+}
+
+.move-btn:hover {
+  background: var(--bg-elev-2);
+}
+
+.move-btn.is-active {
+  background: var(--accent);
+  color: #10200a;
+  font-weight: 700;
+}
+
+.move-cell-empty {
+  color: var(--text-muted);
+}
+
+.moves-empty {
+  margin: 0;
+  font-size: 0.92rem;
+}
+
+/* ---------- Import ---------- */
+.tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.tab {
+  flex: 1;
+  min-height: 40px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.tab.is-active {
+  background: var(--bg-elev-2);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 80px;
+  padding: 10px;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: var(--mono);
+  font-size: 0.88rem; /* >= 16px on iOS would avoid zoom; see media query below */
+  text-align: left;
+}
+
+.textarea::placeholder {
+  color: #5e5c56;
+}
+
+@media (max-width: 899px) {
+  /* Prevent iOS Safari from zooming the page when the field is focused. */
+  .textarea {
+    font-size: 16px;
+  }
+}
+
+.hint {
+  margin: 6px 0 0;
+  font-size: 0.82rem;
+}
+
+.import-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.import-actions .btn-primary {
+  flex: 2;
+}
+
+.import-actions .btn-ghost {
+  flex: 1;
+}
+
+.message {
+  margin: 10px 0 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.92rem;
+}
+
+.message-error {
+  background: rgba(229, 83, 75, 0.14);
+  color: #ff8d86;
+  border: 1px solid rgba(229, 83, 75, 0.4);
+}
+
+.message-success {
+  background: rgba(129, 182, 76, 0.14);
+  color: var(--accent-hover);
+  border: 1px solid rgba(129, 182, 76, 0.4);
+}
+
+/* ---------- Promotion dialog ---------- */
+.promo-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 6px;
+  padding: 8px;
+}
+
+.promo-card {
+  width: min(100%, 360px);
+  padding: 14px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+.promo-title {
+  font-size: 1rem;
+  margin-bottom: 10px;
+}
+
+.promo-options {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.promo-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 4px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.promo-btn:hover {
+  border-color: var(--accent);
+}
+
+.promo-glyph {
+  font-size: 2.2rem;
+  line-height: 1;
+  color: #f3f1ea;
+}
+
+.promo-name {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.promo-cancel {
+  width: 100%;
+  min-height: 40px;
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
