@@ -1,10 +1,14 @@
 {
   "name": "chess-game-review",
   "private": true,
-  "version": "0.1.0",
-  "description": "Arabic RTL chess game review app. Phase 1: chessboard, navigation, FEN/PGN import.",
+  "version": "0.2.0",
+  "description": "Arabic RTL chess game review app. Phase 2: Stockfish live analysis.",
   "type": "module",
   "scripts": {
+    "copy-engine": "node scripts/copy-engine.mjs",
+    "postinstall": "node scripts/copy-engine.mjs",
+    "predev": "node scripts/copy-engine.mjs",
+    "prebuild": "node scripts/copy-engine.mjs",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
@@ -13,7 +17,8 @@
     "chess.js": "^1.0.0",
     "react": "^18.3.1",
     "react-chessboard": "^4.7.2",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "stockfish": "19.0.1"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.1",

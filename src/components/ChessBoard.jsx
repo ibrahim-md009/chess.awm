@@ -31,7 +31,9 @@ function isPromotionMove(fen, from, to) {
   }
 }
 
-export default function ChessBoard({ fen, orientation, lastMove, status, onMove }) {
+const ARROW_COLOR = 'rgba(129, 182, 76, 0.9)';
+
+export default function ChessBoard({ fen, orientation, lastMove, status, onMove, arrow }) {
   const [selected, setSelected] = useState(null);
   const [pendingPromotion, setPendingPromotion] = useState(null); // { from, to }
 
@@ -149,6 +151,7 @@ export default function ChessBoard({ fen, orientation, lastMove, status, onMove 
             boxShadow: '0 6px 24px rgba(0,0,0,0.5)',
           }}
           areArrowsAllowed={false}
+          customArrows={arrow ? [[arrow.from, arrow.to, ARROW_COLOR]] : []}
         />
         {pendingPromotion && (
           <PromotionDialog

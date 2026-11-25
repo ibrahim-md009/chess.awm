@@ -76,6 +76,38 @@ export const ar = {
     unknown: 'حدث خطأ غير متوقع أثناء التحميل.',
   },
 
+  engine: {
+    title: 'تحليل المحرك',
+    subtitle: 'Stockfish',
+    start: 'تشغيل المحرك',
+    stop: 'إيقاف المحرك',
+    retry: 'إعادة المحاولة',
+    idleHint: 'اضغط «تشغيل المحرك» لتحليل الموضع الحالي. يتم تحميل المحرك عند أول تشغيل فقط.',
+    loading: 'جارٍ تحميل المحرك…',
+    searching: 'جارٍ التحليل…',
+    paused: 'المحرك متوقف',
+    waiting: 'بانتظار أول نتيجة…',
+    terminal: 'لا توجد نقلات قانونية في هذا الموضع، لذلك لا حاجة للتحليل.',
+    depthLabel: 'عمق التحليل',
+    linesLabel: 'عدد الأسطر',
+    evaluation: 'التقييم',
+    bestMove: 'أفضل نقلة',
+    lineTitle: 'الأسطر الرئيسية',
+    reached: (d, target) => `العمق ${d} من ${target}`,
+    speed: (knps) => `${knps} ألف عقدة/ث`,
+    whiteAhead: 'الأبيض أفضل',
+    blackAhead: 'الأسود أفضل',
+    equal: 'متعادل تقريباً',
+    errors: {
+      engineMissing:
+        'تعذّر تحميل ملفات المحرك. تأكد من تنفيذ npm install ثم أعد تشغيل الخادم (npm run dev).',
+      unsupported: 'متصفحك لا يدعم WebAssembly أو Web Workers المطلوبة لتشغيل المحرك.',
+      timeout: 'استغرق تشغيل المحرك وقتاً أطول من المتوقع. حاول مرة أخرى.',
+      crashed: 'توقف المحرك بشكل غير متوقع. حاول تشغيله مرة أخرى.',
+      unknown: 'حدث خطأ غير متوقع في المحرك.',
+    },
+  },
+
   player: {
     defaultWhite: 'الأبيض',
     defaultBlack: 'الأسود',

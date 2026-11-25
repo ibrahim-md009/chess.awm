@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 import { useChessGame } from './hooks/useChessGame.js';
+import { useStockfish } from './hooks/useStockfish.js';
+import AnalysisPanel from './components/AnalysisPanel.jsx';
 import ChessBoard from './components/ChessBoard.jsx';
 import GameStatus from './components/GameStatus.jsx';
 import NavControls from './components/NavControls.jsx';
@@ -15,6 +17,9 @@ function isTypingTarget(el) {
 
 export default function App() {
   const game = useChessGame();
+  // Engine analysis is skipped when the side to move has no legal moves.
+  const noLegalMoves = game.status.checkmate || game.status.stalemate;
+  const engine = useStockfish(game.fen, noLegalMoves);
   const { goPrev, goNext, goFirst, goLast, reset, moves } = game;
 
   // Keyboard navigation. The page is RTL, so the right arrow goes back in the
@@ -74,6 +79,7 @@ export default function App() {
             lastMove={game.lastMove}
             status={game.status}
             onMove={game.makeMove}
+            arrow={engine.arrow}
           />
           <NavControls
             canPrev={game.canPrev}
@@ -90,6 +96,7 @@ export default function App() {
         </section>
 
         <aside className="side-column">
+          <AnalysisPanel fen={game.fen} engine={engine} />
           <MoveList
             moves={game.moves}
             ply={game.ply}
