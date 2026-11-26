@@ -693,3 +693,110 @@
   text-align: left;
   overflow-wrap: anywhere;
 }
+
+/* ---------- Game review ---------- */
+:root {
+  --c-brilliant: #26c2a3;
+  --c-great: #5b9bd5;
+  --c-best: #81b64c;
+  --c-excellent: #a3c95a;
+  --c-good: #8fa3ad;
+  --c-inaccuracy: #f0c15c;
+  --c-mistake: #e68f3c;
+  --c-blunder: #e5534b;
+}
+
+.select {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 10px;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+
+.select:disabled {
+  opacity: 0.5;
+}
+
+.review-start {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.progress {
+  width: 100%;
+  height: 12px;
+  margin-top: 12px;
+  accent-color: var(--accent);
+}
+
+.review-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.review-table th,
+.review-table td {
+  padding: 6px 4px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+
+.review-table thead th {
+  color: var(--text-muted);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 110px;
+}
+
+.review-table tbody th {
+  text-align: start;
+  font-weight: 500;
+}
+
+.review-table td {
+  font-family: var(--mono);
+  font-weight: 700;
+}
+
+.row-accuracy td {
+  font-size: 1.25rem;
+  color: var(--accent-hover);
+}
+
+.row-heading th {
+  padding-top: 14px;
+  text-align: start;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.class-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.class-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.class-brilliant { background: var(--c-brilliant); }
+.class-great { background: var(--c-great); }
+.class-best { background: var(--c-best); }
+.class-excellent { background: var(--c-excellent); }
+.class-good { background: var(--c-good); }
+.class-inaccuracy { background: var(--c-inaccuracy); }
+.class-mistake { background: var(--c-mistake); }
+.class-blunder { background: var(--c-blunder); }

@@ -1,7 +1,7 @@
 # مراجعة مباريات الشطرنج — Chess Game Review
 
 Arabic RTL dark-themed chess app built with React + Vite.
-**Current status: Phase 2 of 5** (Stockfish integration and live analysis).
+**Current status: Phase 3 of 5** (game review engine).
 
 ## Requirements
 
@@ -62,6 +62,41 @@ npm run preview
   start-up timeout, engine crash (with a retry button)
 - Positions with no legal moves (checkmate / stalemate) are not sent to the engine
 
+### Phase 3 (new): game review engine
+
+Press «بدء مراجعة المباراة» to analyse the whole game (the current move list).
+
+- **Full-game analysis** (`src/engine/gameReview.js`): every position is evaluated at a
+  fixed depth (fast 10 / balanced 14 / accurate 18) with 2 lines, using a **separate
+  engine instance** so it never disturbs live analysis. Live analysis is paused while a
+  review runs. Checkmate / stalemate positions are scored without a search.
+- **Centipawn loss** per move: how much the mover's evaluation dropped compared with the
+  engine's best move (mates and extremes are capped at ±1000).
+- **Move classification** (`src/utils/review.js`), based on the drop in the mover's
+  winning chances (win% points, Lichess' logistic model):
+
+  | Class | Rule |
+  |---|---|
+  | Brilliant | Loses ≤ 2 points, leaves a piece capturable for a net loss of ≥ 2 pawns after recaptures (sacrifice), and the mover is not worse afterwards (≥ 45%) nor already winning before (≤ 90%) |
+  | Great | The engine's best move, and the second-best line is ≥ 12 points worse ("only move"); obvious recaptures and forced single moves are excluded |
+  | Best | The engine's top choice |
+  | Excellent | Loses ≤ 2 points |
+  | Good | Loses ≤ 5 points |
+  | Inaccuracy | Loses ≤ 10 points |
+  | Mistake | Loses ≤ 20 points |
+  | Blunder | Loses more than 20 points |
+
+- **Player accuracy**: per-move accuracy `103.1668·e^(−0.04354·loss) − 3.1669`, combined as the
+  average of a volatility-weighted mean and a harmonic mean (the idea Lichess uses).
+- **Statistics**: accuracy, average centipawn loss, move count and a count per class for each side.
+
+These are our own approximations of the Lichess / Chess.com ideas, computed at a fixed
+depth with a small WASM engine, so numbers will not match those sites exactly. There is no
+opening-book detection. The full per-move data (best move, cp loss, win%) is already
+produced for Phase 4 (graph, board icons, move-list marks); this phase only shows the
+summary. A cancel button and richer progress display arrive in Phase 4; for now changing
+the game (a move, undo, import, reset) aborts a running review.
+
 ## Why the lite single-threaded engine
 
 It is small (about 1.7 MB) and works on any static host with no special headers.
@@ -83,12 +118,15 @@ src/
   main.jsx                entry
   App.jsx                 layout and keyboard shortcuts
   components/             ChessBoard, PromotionDialog, MoveList, NavControls,
-                          ImportPanel, GameStatus, AnalysisPanel
+                          ImportPanel, GameStatus, AnalysisPanel, ReviewPanel
   engine/stockfishEngine.js   Web Worker + UCI wrapper, info-line parser
   hooks/useChessGame.js   game state (reducer)
+  engine/gameReview.js    full-game position evaluation (own engine, abortable)
   hooks/useStockfish.js   live-analysis state
+  hooks/useGameReview.js  review state (start, progress, result)
   utils/chess.js          FEN/PGN parsing, move records, status helpers
   utils/analysis.js       score formatting, PV to SAN
+  utils/review.js         win%, centipawn loss, classification, accuracy, stats
   i18n/ar.js              Arabic strings
   styles/                 base.css, components.css
 ```
@@ -96,8 +134,8 @@ src/
 ## Roadmap
 
 1. Foundation and chessboard ✔
-2. Stockfish integration ✔ (this release)
-3. Game review engine
+2. Stockfish integration ✔
+3. Game review engine ✔ (this release)
 4. Game review interface
 5. Final integration and polish
 
@@ -111,4 +149,4 @@ If you distribute this app, make sure you comply with that license.
 This release was written and reviewed by reading the code only. It has not been
 installed, built, or run by its author, so please report anything that fails
 after `npm install` / `npm run dev`. In particular, the engine-loading path
-(`public/engine`, the Web Worker and the UCI exchange) has not been exercised.
+(`public/engine`, the Web Worker and the UCI exchange) and the review scoring (thresholds, Brilliant / Great heuristics, accuracy) have not been exercised.

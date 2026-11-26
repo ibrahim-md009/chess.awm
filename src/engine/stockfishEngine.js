@@ -143,7 +143,11 @@ export class StockfishEngine {
     this.superseded = false;
     const waiters = this.waiters;
     this.waiters = [];
-    waiters.forEach((w) => clearTimeout(w.timer));
+    // Reject (not just drop) pending init waiters so an aborted init never hangs.
+    waiters.forEach((w) => {
+      clearTimeout(w.timer);
+      w.reject(new EngineError('unknown', 'Engine terminated'));
+    });
     if (this.worker) {
       this.worker.onmessage = null;
       this.worker.onerror = null;

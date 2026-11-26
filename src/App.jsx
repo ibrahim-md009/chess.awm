@@ -1,7 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useChessGame } from './hooks/useChessGame.js';
 import { useStockfish } from './hooks/useStockfish.js';
+import { useGameReview } from './hooks/useGameReview.js';
 import AnalysisPanel from './components/AnalysisPanel.jsx';
+import ReviewPanel from './components/ReviewPanel.jsx';
 import ChessBoard from './components/ChessBoard.jsx';
 import GameStatus from './components/GameStatus.jsx';
 import NavControls from './components/NavControls.jsx';
@@ -20,6 +22,19 @@ export default function App() {
   // Engine analysis is skipped when the side to move has no legal moves.
   const noLegalMoves = game.status.checkmate || game.status.stalemate;
   const engine = useStockfish(game.fen, noLegalMoves);
+  const review = useGameReview(game.startFen, game.moves);
+  const [livePaused, setLivePaused] = useState(false);
+
+  // The review uses its own engine; pause live analysis so they don't compete for the CPU.
+  const startReview = () => {
+    if (engine.enabled) {
+      engine.toggle();
+      setLivePaused(true);
+    } else {
+      setLivePaused(false);
+    }
+    review.start();
+  };
   const { goPrev, goNext, goFirst, goLast, reset, moves } = game;
 
   // Keyboard navigation. The page is RTL, so the right arrow goes back in the
@@ -96,6 +111,12 @@ export default function App() {
         </section>
 
         <aside className="side-column">
+          <ReviewPanel
+            review={{ ...review, start: startReview }}
+            headers={game.headers}
+            hasMoves={game.moves.length > 0}
+            liveWasPaused={livePaused}
+          />
           <AnalysisPanel fen={game.fen} engine={engine} />
           <MoveList
             moves={game.moves}
