@@ -79,9 +79,13 @@ export function normalizeFen(raw) {
   return parts.slice(0, 6).join(' ');
 }
 
+/** Upper bound for pasted FEN / PGN text (protects the UI from huge pastes). */
+export const MAX_INPUT_CHARS = 200000;
+
 /** @returns {{ok:true,startFen:string}|{ok:false,error:string}} */
 export function parseFen(raw) {
   if (!raw || !raw.trim()) return { ok: false, error: 'empty' };
+  if (raw.length > MAX_INPUT_CHARS) return { ok: false, error: 'tooLarge' };
   try {
     const chess = new Chess(normalizeFen(raw));
     return { ok: true, startFen: chess.fen() };
@@ -105,16 +109,34 @@ function cleanHeaders(rawHeaders) {
   return out;
 }
 
+/** Strip a BOM and normalise line endings (files saved on Windows / by some editors). */
+function normalizePgnText(raw) {
+  return raw.replace(/^﻿/, '').replace(/\r\n?/g, '\n').trim();
+}
+
+/**
+ * When several games are pasted together, keep only the first one: cut the text
+ * at the second "[Event " tag. (Assumes the usual PGN layout where each game
+ * starts with its Event tag.)
+ */
+function firstGameOnly(text) {
+  const re = /^\[Event\s/gm;
+  re.exec(text); // the first game's Event tag
+  const second = re.exec(text);
+  return second ? text.slice(0, second.index).trim() : text;
+}
+
 /**
  * Parse a PGN string (first game only).
  * @returns {{ok:true,startFen:string,moves:object[],headers:object}|{ok:false,error:string}}
  */
 export function parsePgn(raw) {
   if (!raw || !raw.trim()) return { ok: false, error: 'empty' };
+  if (raw.length > MAX_INPUT_CHARS) return { ok: false, error: 'tooLarge' };
 
   const chess = new Chess();
   try {
-    chess.loadPgn(raw.trim());
+    chess.loadPgn(firstGameOnly(normalizePgnText(raw)));
   } catch {
     return { ok: false, error: 'invalidPgn' };
   }

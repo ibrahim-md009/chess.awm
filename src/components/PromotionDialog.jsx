@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { ar } from '../i18n/ar.js';
 
 // Unicode chess glyphs: white set for white, black set for black.
@@ -9,6 +10,15 @@ const GLYPHS = {
 const ORDER = ['q', 'r', 'b', 'n'];
 
 export default function PromotionDialog({ color, onSelect, onCancel }) {
+  // Escape closes the dialog without promoting.
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape') onCancel();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onCancel]);
+
   return (
     <div
       className="promo-overlay"

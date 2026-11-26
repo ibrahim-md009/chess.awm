@@ -1,8 +1,8 @@
 {
   "name": "chess-game-review",
   "private": true,
-  "version": "0.2.0",
-  "description": "Arabic RTL chess game review app. Phase 2: Stockfish live analysis.",
+  "version": "1.0.0",
+  "description": "Arabic RTL chess game review app: Stockfish analysis, move classification, accuracy and an interactive evaluation graph.",
   "type": "module",
   "scripts": {
     "copy-engine": "node scripts/copy-engine.mjs",

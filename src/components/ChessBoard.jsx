@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, memo } from 'react';
 import { Chessboard } from 'react-chessboard';
 import { Chess } from 'chess.js';
 import PromotionDialog from './PromotionDialog.jsx';
@@ -34,7 +34,7 @@ function isPromotionMove(fen, from, to) {
 
 const ARROW_COLOR = 'rgba(129, 182, 76, 0.9)';
 
-export default function ChessBoard({ fen, orientation, lastMove, status, onMove, arrow, badge }) {
+function ChessBoard({ fen, orientation, lastMove, status, onMove, arrow, badge }) {
   const [selected, setSelected] = useState(null);
   const [pendingPromotion, setPendingPromotion] = useState(null); // { from, to }
 
@@ -172,3 +172,5 @@ export default function ChessBoard({ fen, orientation, lastMove, status, onMove,
     </div>
   );
 }
+
+export default memo(ChessBoard);

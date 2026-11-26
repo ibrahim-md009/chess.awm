@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useChessGame } from './hooks/useChessGame.js';
 import { useStockfish } from './hooks/useStockfish.js';
 import { useGameReview } from './hooks/useGameReview.js';
@@ -20,23 +20,27 @@ function isTypingTarget(el) {
 
 export default function App() {
   const game = useChessGame();
+  const { goPrev, goNext, goFirst, goLast, reset, moves } = game;
+
   // Engine analysis is skipped when the side to move has no legal moves.
   const noLegalMoves = game.status.checkmate || game.status.stalemate;
   const engine = useStockfish(game.fen, noLegalMoves);
-  const review = useGameReview(game.startFen, game.moves);
+  const review = useGameReview(game.startFen, moves);
   const [livePaused, setLivePaused] = useState(false);
 
+  const { enabled: liveEnabled, toggle: toggleLive } = engine;
+  const { start: startReviewRun } = review;
+
   // The review uses its own engine; pause live analysis so they don't compete for the CPU.
-  const startReview = () => {
-    if (engine.enabled) {
-      engine.toggle();
+  const startReview = useCallback(() => {
+    if (liveEnabled) {
+      toggleLive();
       setLivePaused(true);
     } else {
       setLivePaused(false);
     }
-    review.start();
-  };
-  const { goPrev, goNext, goFirst, goLast, reset, moves } = game;
+    startReviewRun();
+  }, [liveEnabled, toggleLive, startReviewRun]);
 
   // The review result only counts while it still matches the move list on screen.
   const reviewResult =
@@ -50,13 +54,14 @@ export default function App() {
   );
 
   // Classification badge on the destination square of the move being viewed.
-  const badge =
-    reviewResult && game.ply > 0 && game.lastMove
-      ? {
-          square: game.lastMove.to,
-          classification: reviewResult.moves[game.ply - 1].classification,
-        }
-      : null;
+  // Memoised on primitives so the board is not re-rendered by unrelated updates.
+  const badgeSquare = reviewResult && game.ply > 0 && game.lastMove ? game.lastMove.to : null;
+  const badgeClass =
+    reviewResult && game.ply > 0 ? reviewResult.moves[game.ply - 1].classification : null;
+  const badge = useMemo(
+    () => (badgeSquare && badgeClass ? { square: badgeSquare, classification: badgeClass } : null),
+    [badgeSquare, badgeClass],
+  );
 
   // Keyboard navigation. The page is RTL, so the right arrow goes back in the
   // game (toward the right-hand start of the reading order) and left goes forward.
@@ -87,10 +92,11 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKey);
   }, [goPrev, goNext, goFirst, goLast]);
 
-  const handleReset = () => {
-    if (moves.length > 0 && !window.confirm(ar.confirmReset)) return;
+  const movesCount = moves.length;
+  const handleReset = useCallback(() => {
+    if (movesCount > 0 && !window.confirm(ar.confirmReset)) return;
     reset();
-  };
+  }, [movesCount, reset]);
 
   return (
     <div className="app">
@@ -122,10 +128,10 @@ export default function App() {
             canPrev={game.canPrev}
             canNext={game.canNext}
             canUndo={game.canUndo}
-            onFirst={game.goFirst}
-            onPrev={game.goPrev}
-            onNext={game.goNext}
-            onLast={game.goLast}
+            onFirst={goFirst}
+            onPrev={goPrev}
+            onNext={goNext}
+            onLast={goLast}
             onFlip={game.flip}
             onUndo={game.undo}
             onReset={handleReset}
@@ -140,14 +146,15 @@ export default function App() {
 
         <aside className="side-column">
           <ReviewPanel
-            review={{ ...review, start: startReview }}
+            review={review}
+            onStart={startReview}
             headers={game.headers}
-            hasMoves={game.moves.length > 0}
+            hasMoves={movesCount > 0}
             liveWasPaused={livePaused}
           />
           <AnalysisPanel fen={game.fen} engine={engine} />
           <MoveList
-            moves={game.moves}
+            moves={moves}
             marks={marks}
             ply={game.ply}
             startFullmove={game.startFullmove}

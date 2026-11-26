@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { ar } from '../i18n/ar.js';
 
-export default function ImportPanel({ onLoadPgn, onLoadFen }) {
+function ImportPanel({ onLoadPgn, onLoadFen }) {
   const [tab, setTab] = useState('pgn');
   const [texts, setTexts] = useState({ pgn: '', fen: '' });
   const [message, setMessage] = useState(null); // { type: 'error' | 'success', text }
@@ -101,3 +101,5 @@ export default function ImportPanel({ onLoadPgn, onLoadFen }) {
     </section>
   );
 }
+
+export default memo(ImportPanel);

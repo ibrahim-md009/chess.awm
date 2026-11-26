@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { ar } from '../i18n/ar.js';
 
 function PlayerChip({ color, name, active }) {
@@ -9,7 +10,7 @@ function PlayerChip({ color, name, active }) {
   );
 }
 
-export default function GameStatus({ status, headers, orientation, fen }) {
+function GameStatus({ status, headers, orientation, fen }) {
   const sideName = (c) => (c === 'w' ? ar.white : ar.black);
 
   let text;
@@ -69,3 +70,5 @@ export default function GameStatus({ status, headers, orientation, fen }) {
     </div>
   );
 }
+
+export default memo(GameStatus);

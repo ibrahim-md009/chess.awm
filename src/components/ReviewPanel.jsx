@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { REVIEW_DEPTHS } from '../hooks/useGameReview.js';
 import { CLASSIFICATIONS } from '../utils/review.js';
 import { ar } from '../i18n/ar.js';
@@ -14,8 +15,8 @@ function etaText(startedAt, done, total) {
   return ar.review.etaMinutes(Math.floor(seconds / 60), seconds % 60);
 }
 
-export default function ReviewPanel({ review, headers, hasMoves, liveWasPaused }) {
-  const { status, progress, result, error, startedAt, depth, setDepth, start, cancel } = review;
+function ReviewPanel({ review, onStart, headers, hasMoves, liveWasPaused }) {
+  const { status, progress, result, error, reason, startedAt, depth, setDepth, cancel } = review;
   const running = status === 'running';
   const percent = progress.total ? Math.round((progress.done / progress.total) * 100) : 0;
 
@@ -53,7 +54,7 @@ export default function ReviewPanel({ review, headers, hasMoves, liveWasPaused }
         <button
           type="button"
           className="btn btn-primary review-start"
-          onClick={start}
+          onClick={onStart}
           disabled={!hasMoves}
         >
           {status === 'done' ? ar.review.rerun : ar.review.start}
@@ -62,7 +63,11 @@ export default function ReviewPanel({ review, headers, hasMoves, liveWasPaused }
 
       {!hasMoves && <p className="muted engine-status">{ar.review.noMoves}</p>}
       {hasMoves && status === 'idle' && <p className="muted engine-status">{ar.review.note}</p>}
-      {status === 'cancelled' && <p className="muted engine-status">{ar.review.cancelled}</p>}
+      {status === 'cancelled' && (
+        <p className="muted engine-status" role="status">
+          {reason === 'gameChanged' ? ar.review.cancelledByChange : ar.review.cancelled}
+        </p>
+      )}
 
       {running && (
         <div className="review-progress" role="status" aria-live="polite">
@@ -133,3 +138,4 @@ export default function ReviewPanel({ review, headers, hasMoves, liveWasPaused }
     </section>
   );
 }
+export default memo(ReviewPanel);

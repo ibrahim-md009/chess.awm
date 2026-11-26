@@ -1015,3 +1015,116 @@
     max-width: min(100%, 74vh, 720px);
   }
 }
+
+/* ---------- Phase 5: polish & mobile ---------- */
+body {
+  overflow-x: hidden;
+}
+
+/* No double-tap zoom delay on controls. */
+button,
+select,
+.tab,
+.segment,
+.graph-area {
+  touch-action: manipulation;
+}
+.graph-area {
+  touch-action: pan-y;
+}
+
+.app {
+  padding-bottom: max(32px, calc(16px + env(safe-area-inset-bottom)));
+}
+
+.crash-panel {
+  max-width: 520px;
+  margin: 40px auto;
+  text-align: center;
+}
+
+.crash-panel .btn {
+  margin-top: 8px;
+}
+
+/* Phones */
+@media (max-width: 480px) {
+  .app {
+    padding-inline: 8px;
+    padding-top: 6px;
+  }
+  .app-header {
+    padding: 4px 0 8px;
+  }
+  .app-title {
+    font-size: 1.15rem;
+  }
+  .app-logo {
+    font-size: 1.4rem;
+  }
+  .layout,
+  .board-column,
+  .side-column {
+    gap: 10px;
+  }
+  .panel {
+    padding: 10px;
+  }
+  .status-block {
+    gap: 6px;
+  }
+  .player-chip {
+    padding: 4px 8px;
+    font-size: 0.92rem;
+  }
+  .status-banner {
+    padding: 6px 10px;
+    font-size: 0.92rem;
+  }
+  .controls-secondary .btn {
+    font-size: 0.8rem;
+    gap: 4px;
+    padding-inline: 4px;
+  }
+  .btn {
+    min-height: 46px; /* comfortable touch target */
+  }
+  .graph-area {
+    height: 110px;
+  }
+  .review-table {
+    font-size: 0.85rem;
+  }
+  .review-table thead th {
+    max-width: 80px;
+  }
+  .move-row {
+    grid-template-columns: 36px 1fr 1fr;
+  }
+  .move-cell {
+    padding: 4px 6px;
+  }
+  .pv-score {
+    min-width: 46px;
+  }
+  .promo-glyph {
+    font-size: 1.9rem;
+  }
+}
+
+/* Phones in landscape: board on one side, panels scroll on the other. */
+@media (orientation: landscape) and (max-height: 520px) and (min-width: 640px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 14px;
+  }
+  .board-square,
+  .status-block,
+  .controls,
+  .navigator-panel {
+    max-width: min(100%, 72vh);
+  }
+  .app-header {
+    display: none;
+  }
+}

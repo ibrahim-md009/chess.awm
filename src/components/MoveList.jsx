@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, memo } from 'react';
 import { buildMoveRows } from '../utils/chess.js';
 import { CLASS_META } from '../utils/classification.js';
 import { ar } from '../i18n/ar.js';
@@ -38,7 +38,7 @@ function MoveCell({ index, move, mark, active, onSelect, cellRef }) {
  * @param {object[]|null} marks  optional classification per move (same indexes as `moves`),
  *                               present only while a review result matches the game
  */
-export default function MoveList({ moves, marks, ply, startFullmove, onSelect }) {
+function MoveList({ moves, marks, ply, startFullmove, onSelect }) {
   const rows = useMemo(() => buildMoveRows(moves, startFullmove), [moves, startFullmove]);
   const activeRef = useRef(null);
   const containerRef = useRef(null);
@@ -96,3 +96,5 @@ export default function MoveList({ moves, marks, ply, startFullmove, onSelect })
     </section>
   );
 }
+
+export default memo(MoveList);

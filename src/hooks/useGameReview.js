@@ -11,6 +11,7 @@ const IDLE = {
   result: null,
   error: null,
   startedAt: null,
+  reason: null, // why a review was cancelled: 'user' | 'gameChanged'
 };
 
 /**
@@ -40,10 +41,12 @@ export function useGameReview(startFen, moves) {
     }
   }, []);
 
-  // Game changed: abort anything running and drop stale results.
+  // Game changed: abort anything running and drop stale results. If a review was
+  // running, say so (otherwise the progress bar would just vanish).
   useEffect(() => {
+    const wasRunning = controllerRef.current !== null;
     abortRun();
-    setState(IDLE);
+    setState(wasRunning ? { ...IDLE, status: 'cancelled', reason: 'gameChanged' } : IDLE);
   }, [gameKey, abortRun]);
 
   // Abort on unmount.
@@ -52,7 +55,7 @@ export function useGameReview(startFen, moves) {
   const cancel = useCallback(() => {
     if (!controllerRef.current) return;
     abortRun();
-    setState({ ...IDLE, status: 'cancelled' });
+    setState({ ...IDLE, status: 'cancelled', reason: 'user' });
   }, [abortRun]);
 
   const start = useCallback(async () => {
@@ -68,6 +71,7 @@ export function useGameReview(startFen, moves) {
       result: null,
       error: null,
       startedAt: Date.now(),
+      reason: null,
     });
 
     try {
@@ -89,6 +93,7 @@ export function useGameReview(startFen, moves) {
         result,
         error: null,
         startedAt: null,
+        reason: null,
       });
     } catch (err) {
       if (controller.signal.aborted || err.name === 'AbortError') return;
@@ -98,15 +103,20 @@ export function useGameReview(startFen, moves) {
     }
   }, [moves, startFen, depth]);
 
-  return {
-    status: state.status,
-    progress: state.progress,
-    result: state.result,
-    error: state.error,
-    startedAt: state.startedAt,
-    depth,
-    setDepth,
-    start,
-    cancel,
-  };
+  // Memoised so memo()-wrapped consumers don't re-render on unrelated updates.
+  return useMemo(
+    () => ({
+      status: state.status,
+      progress: state.progress,
+      result: state.result,
+      error: state.error,
+      startedAt: state.startedAt,
+      reason: state.reason,
+      depth,
+      setDepth,
+      start,
+      cancel,
+    }),
+    [state, depth, start, cancel],
+  );
 }

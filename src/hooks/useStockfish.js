@@ -156,10 +156,10 @@ export function useStockfish(fen, terminal) {
   const searching =
     enabled && phase === 'ready' && !terminal && (analysis.fen !== fen || analysis.searching);
 
-  const arrow = useMemo(() => {
-    const top = lines[0];
-    return top ? parseUciMove(top.pv[0]) : null;
-  }, [lines]);
+  // Keyed on the move string so the arrow object only changes when the best move
+  // does (not on every engine update); that keeps the board from re-rendering.
+  const topMove = lines[0] ? lines[0].pv[0] : null;
+  const arrow = useMemo(() => parseUciMove(topMove), [topMove]);
 
   return {
     enabled,

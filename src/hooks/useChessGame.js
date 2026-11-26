@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useReducer } from 'react';
 import { Chess } from 'chess.js';
+import { ar } from '../i18n/ar.js';
 import {
   START_FEN,
   createMoveRecord,
@@ -124,7 +125,12 @@ export function useChessGame() {
 
   /* ---- actions ---- */
 
-  /** Returns true when the move is legal (used by the board for feedback). */
+  /**
+   * Returns true when the move was played (used by the board for feedback).
+   * Playing a different move from an earlier position deletes the rest of the
+   * game (and any review), so the user is asked to confirm first. Re-playing the
+   * game's own next move just advances and never asks.
+   */
   const makeMove = useCallback(
     (from, to, promotion) => {
       try {
@@ -133,10 +139,19 @@ export function useChessGame() {
       } catch {
         return false;
       }
+
+      const next = moves[ply];
+      const isNextMove =
+        next &&
+        next.from === from &&
+        next.to === to &&
+        (next.promotion || null) === (promotion || null);
+      if (next && !isNextMove && !window.confirm(ar.confirmTruncate)) return false;
+
       dispatch({ type: 'PLAY', from, to, promotion });
       return true;
     },
-    [fen],
+    [fen, moves, ply],
   );
 
   const goTo = useCallback((p) => dispatch({ type: 'GOTO', ply: p }), []);
