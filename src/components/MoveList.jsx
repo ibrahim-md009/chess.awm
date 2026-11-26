@@ -62,8 +62,7 @@ function MoveList({ moves, marks, ply, startFullmove, onSelect }) {
   const markAt = (i) => (marks && i !== null && marks[i] ? marks[i] : null);
 
   return (
-    <section className="panel moves-panel" aria-label={ar.moves.title}>
-      <h2 className="panel-title">{ar.moves.title}</h2>
+    <div className="moves" role="region" aria-label={ar.moves.title}>
       {rows.length === 0 ? (
         <p className="muted moves-empty">{ar.moves.empty}</p>
       ) : (
@@ -93,7 +92,7 @@ function MoveList({ moves, marks, ply, startFullmove, onSelect }) {
           </ol>
         </div>
       )}
-    </section>
+    </div>
   );
 }
 

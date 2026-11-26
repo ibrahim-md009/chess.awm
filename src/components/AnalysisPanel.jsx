@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { MAX_DEPTH, MAX_LINES, MIN_DEPTH } from '../hooks/useStockfish.js';
-import { formatPv, formatScore, scoreToWhitePercent } from '../utils/analysis.js';
+import { formatPv, formatScore } from '../utils/analysis.js';
 import { ar } from '../i18n/ar.js';
 
 function verdict(line) {
@@ -11,7 +11,12 @@ function verdict(line) {
   return ar.engine.equal;
 }
 
-export default function AnalysisPanel({ fen, engine }) {
+/**
+ * Live analysis tab. Analysis runs continuously and follows the board; the
+ * evaluation bar next to the board is fed by the same engine. Nothing here depends
+ * on the "show best-move arrow" setting.
+ */
+export default function AnalysisPanel({ fen, engine, pausedByReview }) {
   const {
     enabled,
     phase,
@@ -24,6 +29,7 @@ export default function AnalysisPanel({ fen, engine }) {
     lines,
     searching,
     terminal,
+    evalLine,
   } = engine;
 
   const top = lines[0] || null;
@@ -34,28 +40,35 @@ export default function AnalysisPanel({ fen, engine }) {
     () => lines.map((line) => ({ line, pv: formatPv(fen, line.pv, 10) })),
     [lines, fen],
   );
-
   const bestSan = formatted[0]?.pv.firstSan || null;
-  const whitePct = scoreToWhitePercent(top);
+
+  let chip = { text: ar.engine.stoppedChip, tone: 'off' };
+  if (loading) chip = { text: ar.engine.loadingChip, tone: 'busy' };
+  else if (enabled && phase === 'ready') chip = { text: ar.engine.running, tone: 'on' };
 
   let statusText = null;
-  if (loading) statusText = ar.engine.loading;
+  if (pausedByReview) statusText = ar.engine.pausedByReview;
+  else if (loading) statusText = ar.engine.loading;
   else if (terminal && enabled) statusText = ar.engine.terminal;
   else if (enabled && phase === 'ready' && !top) statusText = ar.engine.waiting;
   else if (!enabled && phase === 'ready') statusText = top ? ar.engine.paused : ar.engine.idleHint;
   else if (!enabled && phase === 'idle') statusText = ar.engine.idleHint;
 
   const buttonLabel = enabled ? ar.engine.stop : phase === 'error' ? ar.engine.retry : ar.engine.start;
+  const shown = top || evalLine;
 
   return (
-    <section className="panel analysis-panel" aria-label={ar.engine.title}>
+    <section className="analysis" aria-label={ar.engine.title}>
       <div className="analysis-head">
-        <h2 className="panel-title">
-          {ar.engine.title} <span className="muted analysis-sub" dir="ltr">{ar.engine.subtitle}</span>
-        </h2>
+        <div className="analysis-title">
+          <h2 className="section-title">
+            {ar.engine.title} <span className="muted" dir="ltr">{ar.engine.subtitle}</span>
+          </h2>
+          <span className={`status-chip chip-${chip.tone}`}>{chip.text}</span>
+        </div>
         <button
           type="button"
-          className={`btn ${enabled ? '' : 'btn-primary'} analysis-toggle`}
+          className={`btn btn-sm ${enabled ? '' : 'btn-primary'}`}
           onClick={toggle}
           aria-pressed={enabled}
         >
@@ -67,6 +80,44 @@ export default function AnalysisPanel({ fen, engine }) {
         <p className="message message-error" role="alert">
           {ar.engine.errors[error] || ar.engine.errors.unknown}
         </p>
+      )}
+
+      {statusText && <p className="muted engine-status">{statusText}</p>}
+
+      {shown && !terminal && (
+        <div className={`score-card${top ? '' : ' is-stale'}`}>
+          <div className="score-main">
+            <span className="score-value" dir="ltr">{formatScore(shown)}</span>
+            <span className="score-verdict">{verdict(shown)}</span>
+          </div>
+          <div className="score-meta muted">
+            {top && <span>{ar.engine.reached(top.depth, depth)}</span>}
+            {top && top.nps ? <span>{ar.engine.speed(Math.round(top.nps / 1000))}</span> : null}
+            {searching && <span className="searching-dot">{ar.engine.searching}</span>}
+          </div>
+          {searching && top && (
+            <progress className="progress" max={depth} value={Math.min(top.depth, depth)} aria-label={ar.engine.searching} />
+          )}
+        </div>
+      )}
+
+      {top && !terminal && (
+        <>
+          {bestSan && (
+            <p className="best-move">
+              {ar.engine.bestMove}: <strong dir="ltr">{bestSan}</strong>
+            </p>
+          )}
+          <h3 className="sub-title">{ar.engine.lineTitle}</h3>
+          <ol className="pv-list">
+            {formatted.map(({ line, pv }) => (
+              <li className={`pv-item${line.multipv === 1 ? ' is-best' : ''}`} key={line.multipv}>
+                <span className="pv-score" dir="ltr">{formatScore(line)}</span>
+                <span className="pv-moves" dir="ltr">{pv.text}</span>
+              </li>
+            ))}
+          </ol>
+        </>
       )}
 
       <div className="engine-settings">
@@ -103,47 +154,6 @@ export default function AnalysisPanel({ fen, engine }) {
           </div>
         </div>
       </div>
-
-      {statusText && <p className="muted engine-status">{statusText}</p>}
-
-      {top && !terminal && (
-        <>
-          <div className="eval-block">
-            <div className="eval-row">
-              <span className="eval-score" dir="ltr">{formatScore(top)}</span>
-              <span className="eval-verdict">{verdict(top)}</span>
-            </div>
-            <div
-              className="eval-bar"
-              role="img"
-              aria-label={`${ar.engine.evaluation}: ${formatScore(top)}`}
-            >
-              <div className="eval-bar-white" style={{ width: `${whitePct}%` }} />
-            </div>
-            <div className="engine-meta muted">
-              <span>{ar.engine.reached(top.depth, depth)}</span>
-              {top.nps ? <span>{ar.engine.speed(Math.round(top.nps / 1000))}</span> : null}
-              {searching && <span className="searching-dot">{ar.engine.searching}</span>}
-            </div>
-          </div>
-
-          {bestSan && (
-            <p className="best-move">
-              {ar.engine.bestMove}: <strong dir="ltr">{bestSan}</strong>
-            </p>
-          )}
-
-          <h3 className="sub-title">{ar.engine.lineTitle}</h3>
-          <ol className="pv-list">
-            {formatted.map(({ line, pv }) => (
-              <li className={`pv-item${line.multipv === 1 ? ' is-best' : ''}`} key={line.multipv}>
-                <span className="pv-score" dir="ltr">{formatScore(line)}</span>
-                <span className="pv-moves" dir="ltr">{pv.text}</span>
-              </li>
-            ))}
-          </ol>
-        </>
-      )}
     </section>
   );
 }

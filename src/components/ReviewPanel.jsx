@@ -24,8 +24,8 @@ function ReviewPanel({ review, onStart, headers, hasMoves, liveWasPaused }) {
   const blackName = headers.Black || ar.black;
 
   return (
-    <section className="panel review-panel" aria-label={ar.review.title}>
-      <h2 className="panel-title">{ar.review.title}</h2>
+    <section className="review" aria-label={ar.review.title}>
+      <h2 className="section-title">{ar.review.title}</h2>
 
       <div className="setting">
         <label className="field-label" htmlFor="review-depth">

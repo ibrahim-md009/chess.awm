@@ -15,9 +15,6 @@ export const CLASS_META = {
 /** Classes the "previous / next mistake" buttons jump between. */
 export const MISTAKE_CLASSES = ['mistake', 'blunder'];
 
-/** Classes marked with a dot on the evaluation graph. */
-export const GRAPH_MARKED_CLASSES = ['brilliant', 'great', 'mistake', 'blunder'];
-
 /**
  * Find the nearest move (as a ply number, 1-based) before / after `ply` whose
  * classification is one of `classes`. Returns null when there is none.

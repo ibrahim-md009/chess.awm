@@ -4,8 +4,7 @@ import { Chess } from 'chess.js';
 import PromotionDialog from './PromotionDialog.jsx';
 import SquareBadge from './SquareBadge.jsx';
 
-const LIGHT = '#ebecd0';
-const DARK = '#739552';
+const DEFAULT_THEME = { light: '#e3ebf2', dark: '#6f93b3' };
 
 const LAST_MOVE_BG = 'rgba(255, 213, 74, 0.45)';
 const SELECTED_BG = 'rgba(255, 213, 74, 0.7)';
@@ -32,9 +31,10 @@ function isPromotionMove(fen, from, to) {
   }
 }
 
-const ARROW_COLOR = 'rgba(129, 182, 76, 0.9)';
+// Drawn only when the user enables "show best-move arrow" in Settings (the app passes `arrow`).
+const ARROW_COLOR = 'rgba(61, 219, 176, 0.9)';
 
-function ChessBoard({ fen, orientation, lastMove, status, onMove, arrow, badge }) {
+function ChessBoard({ fen, orientation, lastMove, status, onMove, arrow, badge, theme = DEFAULT_THEME }) {
   const [selected, setSelected] = useState(null);
   const [pendingPromotion, setPendingPromotion] = useState(null); // { from, to }
 
@@ -133,8 +133,7 @@ function ChessBoard({ fen, orientation, lastMove, status, onMove, arrow, badge }
   const gameOver = status.checkmate || status.stalemate || status.insufficient;
 
   return (
-    <div className="board-wrap">
-      <div className="board-square">
+    <div className="board-square">
         <Chessboard
           id="main-board"
           position={fen}
@@ -145,11 +144,11 @@ function ChessBoard({ fen, orientation, lastMove, status, onMove, arrow, badge }
           onSquareClick={handleSquareClick}
           onPieceDragBegin={handleDragBegin}
           customSquareStyles={squareStyles}
-          customLightSquareStyle={{ backgroundColor: LIGHT }}
-          customDarkSquareStyle={{ backgroundColor: DARK }}
+          customLightSquareStyle={{ backgroundColor: theme.light }}
+          customDarkSquareStyle={{ backgroundColor: theme.dark }}
           customBoardStyle={{
-            borderRadius: '6px',
-            boxShadow: '0 6px 24px rgba(0,0,0,0.5)',
+            borderRadius: '8px',
+            boxShadow: '0 8px 28px rgba(0,0,0,0.45)',
           }}
           areArrowsAllowed={false}
           customArrows={arrow ? [[arrow.from, arrow.to, ARROW_COLOR]] : []}
@@ -168,7 +167,6 @@ function ChessBoard({ fen, orientation, lastMove, status, onMove, arrow, badge }
             onCancel={() => setPendingPromotion(null)}
           />
         )}
-      </div>
     </div>
   );
 }

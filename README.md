@@ -1,10 +1,11 @@
 # مراجعة مباريات الشطرنج — Chess Game Review
 
 An Arabic (RTL), dark-themed chess game review app built with React + Vite.
-Import a game, let Stockfish analyse it, and see an evaluation graph, move classifications
-(Brilliant … Blunder), per-player accuracy and statistics. Everything runs in the browser.
+Import a game, watch Stockfish evaluate every position live, and run a full-game review with
+move classifications (Brilliant … Blunder), per-player accuracy and statistics.
+Everything runs in the browser.
 
-**Status: Phase 5 of 5, version 1.0.0** (final integration and polish).
+**Status: Phase 6 (UI/UX redesign), version 1.1.0.**
 
 ## Requirements
 
@@ -32,20 +33,46 @@ npm run preview    # serve dist/ locally
 ```
 
 `dist/` is a plain static site and works on any static host, including under a sub-path
-(`base: './'`). Make sure the host serves `.wasm` files as `application/wasm`. The engine used
-is single-threaded, so no special headers (COOP/COEP) are needed.
+(`base: './'`). Make sure the host serves `.wasm` files as `application/wasm`. The engine is
+single-threaded, so no special headers (COOP/COEP) are needed.
 
-## How to use
+## The interface
 
-1. **Load a game**: paste a PGN (first game is used) or a FEN in the «استيراد» panel, or just play
-   moves on the board.
-2. **Analyse live**: «تشغيل المحرك» analyses the position on the board (evaluation, best move,
-   1–3 lines, arrow). Use the depth slider and line count to tune it.
-3. **Review the whole game**: «بدء مراجعة المباراة» analyses every position, then shows accuracy,
-   per-class statistics, the evaluation graph, badges on the board and marks in the move list.
+- **Top bar**: «استيراد PGN» (opens the import dialog), new game, and settings.
+- **Board stage** (centre / top on phones):
+  - **Evaluation bar on the left**, always visible. It follows the live engine continuously, keeps
+    showing the last evaluation (dimmed) while a new position is being searched, follows board
+    flipping, and shows `1-0` / `0-1` / `½` when the game is over.
+  - **Navigation rail on the right**, within thumb reach on phones: first, previous, next, last,
+    then flip and undo. Press and hold previous / next to scrub through the game. "Up" goes back,
+    "down" goes forward.
+  - Player strips above and below the board (name, Elo if the PGN has it, whose turn it is).
+- **Side panel** (under the board on phones), three tabs:
+  - **التحليل**: live engine analysis (score, depth, best move, 1–3 lines), start / stop, depth
+    slider and number of lines.
+  - **النقلات**: move list with review marks, feedback for the current move and
+    previous / next mistake buttons (after a review), and the current FEN with a copy button.
+  - **المراجعة**: full-game review with progress, cancel, accuracy and statistics.
 
-Keyboard: Right = previous move, Left = next move (mirrored for RTL), Home / End = first / last
-move, Esc closes the promotion dialog.
+### Import dialog
+
+Paste a PGN (the first game is used) or a FEN, or choose a `.pgn` / `.txt` file, then press
+«استيراد» (or Ctrl + Enter). Errors are shown inside the dialog in Arabic.
+
+### Settings
+
+Saved in this browser (localStorage):
+
+| Setting | Default | Notes |
+|---|---|---|
+| Show best-move arrow | **off** | Display only. The engine keeps analysing and the evaluation bar keeps updating whether the arrow is shown or not. |
+| Board colours | Ocean | Ocean, Classic, Walnut, Slate |
+| Start live analysis automatically | on | Applies when the app opens. When off, start the engine from the analysis tab. |
+
+### Keyboard
+
+Right = previous move, Left = next move (mirrored for RTL), Home / End = first / last move,
+Esc closes dialogs and the promotion picker.
 
 ## Features
 
@@ -53,27 +80,26 @@ move, Esc closes the promotion dialog.
 - Responsive `react-chessboard` + `chess.js`: legal moves only, drag and drop or click-to-move,
   legal-destination hints, last-move and check highlights, Arabic promotion dialog
 - Undo, board flipping, new game, first / previous / next / last navigation, clickable move list
-- Status: turn, check, checkmate, stalemate, draws
-- FEN and PGN import with Arabic validation messages (BOM and Windows line endings handled,
-  several pasted games → first one, 200,000-character limit)
-- Playing a different move from an earlier position asks for confirmation, because it deletes
-  the rest of the game
+- Status: check, checkmate, stalemate, draws
+- FEN and PGN import (BOM and Windows line endings handled, several pasted games → first one,
+  200,000-character limit)
+- Playing a different move from an earlier position asks for confirmation, because it deletes the
+  rest of the game
 
 **Live analysis (Stockfish 19, lite, single-threaded WASM, in a Web Worker)**
-- UCI wrapper with init timeout, error handling and retry; engine is loaded lazily
-- Evaluation (White's point of view, `#3` for mate) with bar, depth, speed
-- Best move, principal variations (SAN with move numbers), best-move arrow
+- Starts automatically and analyses continuously as moves are played or navigated
+- UCI wrapper with init timeout, error handling and retry
+- Evaluation (White's point of view, `#3` for mate), depth, speed, best move, principal variations
 - Depth slider (8–30), 1–3 lines, start / stop
 
 **Game review**
 - Full-game analysis at a fixed depth (fast 10 / balanced 14 / accurate 18, 2 lines) with its own
-  engine instance; live analysis is paused meanwhile
-- Progress bar with estimated time left, and a cancel button; changing the game cancels the
-  review and says so
+  engine instance; live analysis pauses meanwhile and **resumes automatically** afterwards
+- Progress bar with estimated time left, and a cancel button; changing the game cancels the review
+  and says so
 - Centipawn loss, move classification, player accuracy, statistics
-- Interactive evaluation graph (hover tooltip, click / tap / drag to jump; the starting position
-  is on the right, matching the RTL arrows), classification badges on the destination square,
-  marks in the move list, feedback card, and previous / next mistake buttons
+- Classification badges on the destination square of the move being viewed, and marks in the
+  move list
 
 ### How moves are classified
 
@@ -103,46 +129,51 @@ volatility-weighted mean and a harmonic mean (the idea Lichess uses).
 - Only the main line is kept: there are no variations. PGN comments and variations are ignored.
 - The review covers the current move list; any change to it discards the review.
 - Only standard chess (no Chess960).
+- The evaluation graph from earlier versions was removed in Phase 6.
 
 ## Troubleshooting
 
 - **«تعذّر تحميل ملفات المحرك»**: run `npm install`, check that `public/engine/` contains
   `engine.json` and a `stockfish-…-lite-single.js` + `.wasm` pair, then restart `npm run dev`.
   On a deployed site, check that the `engine/` folder was uploaded and `.wasm` has the right MIME type.
-- **Engine start-up timeout**: slow connection or device; press the button again.
-- **A blank page**: an error boundary shows an Arabic message with a reload button; the details are
-  in the browser console.
+  Until the engine loads, the evaluation bar stays neutral.
+- **Engine start-up timeout**: slow connection or device; press «إعادة المحاولة» in the analysis tab.
+- **A blank page**: an error boundary shows an Arabic message with a reload button; details are in
+  the browser console.
 
 ## Project structure
 
 ```
 scripts/copy-engine.mjs        copies engine files into public/engine
 src/
-  main.jsx                     entry (error boundary)
-  App.jsx                      layout, keyboard shortcuts, wiring
-  components/                  ChessBoard, PromotionDialog, SquareBadge, MoveList, NavControls,
-                               ImportPanel, GameStatus, AnalysisPanel, ReviewPanel,
-                               ReviewNavigator (EvalGraph + MoveFeedback), ErrorBoundary
+  main.jsx                     entry (error boundary, styles)
+  App.jsx                      composition, keyboard, live-analysis <-> review hand-off
+  components/
+    AppBar, PlayerBar, StatusBanner, EvalBar, ChessBoard, NavControls (right-hand rail),
+    SquareBadge, PromotionDialog, SidePanel (tabs), AnalysisPanel, MoveList, MoveFeedback,
+    FenBox, ReviewPanel, Modal, ImportModal, SettingsModal, ErrorBoundary, icons
   engine/stockfishEngine.js    Web Worker + UCI wrapper, info-line parser
   engine/gameReview.js         full-game position evaluation (own engine, abortable)
   hooks/useChessGame.js        game state (reducer)
-  hooks/useStockfish.js        live-analysis state
+  hooks/useStockfish.js        live-analysis state (auto-start, retained evaluation)
   hooks/useGameReview.js       review state (start, progress, cancel, result)
+  hooks/useSettings.js         personal settings (localStorage)
   utils/chess.js               FEN/PGN parsing, move records, status helpers
   utils/analysis.js            score formatting, PV to SAN
   utils/review.js              win%, centipawn loss, classification, accuracy, stats
   utils/classification.js      symbols / colours per class, mistake navigation
   i18n/ar.js                   all Arabic strings
-  styles/                      base.css, components.css
+  styles/                      base.css (tokens), layout.css, components.css
 ```
 
-## Roadmap (all done)
+## Roadmap
 
 1. Foundation and chessboard ✔
 2. Stockfish integration ✔
 3. Game review engine ✔
 4. Game review interface ✔
 5. Final integration and polish ✔
+6. UI/UX redesign ✔ (this release)
 
 ## License note
 
@@ -151,8 +182,9 @@ this app, make sure you comply with that license.
 
 ## Testing note
 
-This project was written and reviewed by reading the code only (plus syntax parsing and a static
-check that all imports and Arabic string keys resolve). It has **not** been installed, built or run
-by its author. The engine-loading path, the review scoring and all browser interactions (drag and
-drop, graph scrubbing, board badges, mobile layout) are therefore untested. Please report anything
-that fails after `npm install` / `npm run dev`.
+This project was written and reviewed by reading the code only (plus syntax parsing and static
+checks that all imports, Arabic string keys and CSS classes resolve). It has **not** been installed,
+built or run by its author. The engine-loading path, the review scoring and all browser
+interactions (drag and drop, the right-hand rail and press-and-hold stepping, the evaluation bar,
+modals, settings persistence, mobile layout) are therefore untested. Please report anything that
+fails after `npm install` / `npm run dev`.

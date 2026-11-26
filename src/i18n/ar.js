@@ -25,6 +25,61 @@ export const ar = {
     groupLabel: 'التنقل بين النقلات',
   },
 
+  modal: { close: 'إغلاق' },
+
+  appBar: {
+    import: 'استيراد PGN',
+    importTitle: 'استيراد مباراة',
+    newGame: 'لعبة جديدة',
+    settings: 'الإعدادات',
+  },
+
+  tabs: {
+    groupLabel: 'أقسام التحليل',
+    analysis: 'التحليل',
+    moves: 'النقلات',
+    review: 'المراجعة',
+  },
+
+  importModal: {
+    title: 'استيراد مباراة',
+    tabs: 'نوع الاستيراد',
+    file: 'اختيار ملف PGN',
+    fileName: (name) => `الملف: ${name}`,
+    fileError: 'تعذّرت قراءة الملف. تأكد أنه ملف نصي بصيغة PGN.',
+    submit: 'استيراد',
+    cancel: 'إلغاء',
+    shortcut: 'اختصار: Ctrl + Enter',
+  },
+
+  settings: {
+    title: 'الإعدادات',
+    done: 'تم',
+    boardSection: 'اللوحة',
+    theme: 'ألوان اللوحة',
+    themes: { ocean: 'محيط', classic: 'كلاسيكي', walnut: 'جوزي', slate: 'رمادي' },
+    analysisSection: 'التحليل',
+    arrow: 'عرض سهم أفضل نقلة',
+    arrowHint:
+      'خيار شخصي للعرض فقط. يستمر المحرك بالتحليل وتحديث التقييم سواء عرضت السهم أم لا.',
+    auto: 'تشغيل التحليل المباشر تلقائياً',
+    autoHint: 'يبدأ المحرك عند فتح التطبيق. عند إيقافه، شغّل المحرك يدوياً من تبويب «التحليل».',
+    saved: 'تُحفظ الإعدادات في هذا المتصفح.',
+  },
+
+  evalBar: {
+    label: 'شريط التقييم',
+    loading: 'جارٍ تحميل المحرك…',
+    off: 'التحليل المباشر متوقف',
+    stale: 'جارٍ تحديث التقييم…',
+    pausedByReview: 'التحليل المباشر متوقف مؤقتاً أثناء المراجعة',
+  },
+
+  fen: {
+    copy: 'نسخ FEN',
+    copied: 'تم النسخ',
+  },
+
   confirmTruncate:
     'اللعب من هذا الموضع سيحذف النقلات التالية في المباراة (وأي مراجعة تمت). هل تريد المتابعة؟',
 
@@ -52,6 +107,7 @@ export const ar = {
   },
 
   status: {
+    toMove: 'الدور',
     turn: (side) => `الدور على ${side}`,
     check: (side) => `كش! الدور على ${side}`,
     checkmate: (winner) => `كش مات — فاز ${winner}`,
@@ -96,6 +152,10 @@ export const ar = {
     loading: 'جارٍ تحميل المحرك…',
     searching: 'جارٍ التحليل…',
     paused: 'المحرك متوقف',
+    pausedByReview: 'متوقف مؤقتاً أثناء مراجعة المباراة، وسيعود تلقائياً بعدها.',
+    running: 'يعمل',
+    loadingChip: 'يحمّل',
+    stoppedChip: 'متوقف',
     waiting: 'بانتظار أول نتيجة…',
     terminal: 'لا توجد نقلات قانونية في هذا الموضع، لذلك لا حاجة للتحليل.',
     depthLabel: 'عمق التحليل',
@@ -132,11 +192,7 @@ export const ar = {
     etaMinutes: (m, s) => `المتبقي تقريباً ${m} د ${s} ث`,
     etaCalculating: 'جارٍ تقدير الوقت المتبقي…',
 
-    graphTitle: 'منحنى التقييم',
-    graphHint: 'اضغط أو اسحب على المنحنى للانتقال بين النقلات (الأبيض في الأعلى).',
-    graphLabel: 'منحنى التقييم عبر المباراة',
     startPosition: 'الموضع الابتدائي',
-    currentMove: 'النقلة الحالية',
     bestWas: 'الأفضل كانت',
     playedBest: 'هذه هي النقلة الأفضل في الموضع.',
     cpLoss: (n) => `خسارة ${n} سنتي-بيدق`,

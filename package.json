@@ -1,7 +1,7 @@
 {
   "name": "chess-game-review",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Arabic RTL chess game review app: Stockfish analysis, move classification, accuracy and an interactive evaluation graph.",
   "type": "module",
   "scripts": {

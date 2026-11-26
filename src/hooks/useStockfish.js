@@ -14,16 +14,18 @@ const START_DEBOUNCE_MS = 150;
 /**
  * Live analysis of the position currently shown on the board.
  *
- * The engine is loaded lazily the first time the user starts it, and kept alive
- * (idle) when they stop it, so restarting is instant.
+ * By default the engine starts automatically when the app opens (`autoStart`) and
+ * keeps analysing every position as it changes. It is kept alive (idle) when
+ * stopped, so restarting is instant.
  *
  * phase: 'idle' (no engine yet) | 'loading' | 'ready' | 'error'
  *
  * @param {string} fen       position to analyse
  * @param {boolean} terminal true when the position has no legal moves
+ * @param {{autoStart?: boolean}} [options] read once, on first render
  */
-export function useStockfish(fen, terminal) {
-  const [enabled, setEnabled] = useState(false);
+export function useStockfish(fen, terminal, { autoStart = true } = {}) {
+  const [enabled, setEnabled] = useState(autoStart);
   const [phase, setPhase] = useState('idle');
   const [error, setError] = useState(null);
   const [depth, setDepth] = useState(DEFAULT_DEPTH);
@@ -141,15 +143,21 @@ export function useStockfish(fen, terminal) {
     [],
   );
 
-  const toggle = useCallback(() => {
-    if (enabled) {
-      setEnabled(false);
-      return;
-    }
-    if (phase === 'error') setPhase('idle'); // retry from scratch
-    setError(null);
-    setEnabled(true);
-  }, [enabled, phase]);
+  /** Start (true) or stop (false) live analysis. Starting after an error retries from scratch. */
+  const setRunning = useCallback(
+    (on) => {
+      if (!on) {
+        setEnabled(false);
+        return;
+      }
+      if (phase === 'error') setPhase('idle');
+      setError(null);
+      setEnabled(true);
+    },
+    [phase],
+  );
+
+  const toggle = useCallback(() => setRunning(!enabled), [enabled, setRunning]);
 
   const lines = useMemo(() => (analysis.fen === fen ? analysis.lines : []), [analysis, fen]);
 
@@ -158,8 +166,17 @@ export function useStockfish(fen, terminal) {
 
   // Keyed on the move string so the arrow object only changes when the best move
   // does (not on every engine update); that keeps the board from re-rendering.
+  // The arrow is only COMPUTED here; whether it is drawn is a user setting, and
+  // hiding it never affects the analysis itself.
   const topMove = lines[0] ? lines[0].pv[0] : null;
   const arrow = useMemo(() => parseUciMove(topMove), [topMove]);
+
+  // The evaluation bar must never flash back to "equal" while a new position is
+  // being searched: keep showing the last known evaluation, flagged as stale.
+  const retainedLineRef = useRef(null);
+  if (lines[0]) retainedLineRef.current = lines[0];
+  const evalLine = lines[0] || retainedLineRef.current;
+  const evalStale = !lines[0];
 
   return {
     enabled,
@@ -170,9 +187,12 @@ export function useStockfish(fen, terminal) {
     multiPv,
     setMultiPv,
     toggle,
+    setRunning,
     lines,
     searching,
     terminal,
     arrow,
+    evalLine,
+    evalStale,
   };
 }
