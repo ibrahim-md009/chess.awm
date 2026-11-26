@@ -5,16 +5,14 @@ import { useGameReview } from './hooks/useGameReview.js';
 import { BOARD_THEMES, useSettings } from './hooks/useSettings.js';
 import AppBar from './components/AppBar.jsx';
 import PlayerBar from './components/PlayerBar.jsx';
-import StatusBanner from './components/StatusBanner.jsx';
 import EvalBar from './components/EvalBar.jsx';
 import ChessBoard from './components/ChessBoard.jsx';
 import NavControls from './components/NavControls.jsx';
-import SidePanel from './components/SidePanel.jsx';
-import AnalysisPanel from './components/AnalysisPanel.jsx';
+import EngineLine from './components/EngineLine.jsx';
+import Modal from './components/Modal.jsx';
 import ReviewPanel from './components/ReviewPanel.jsx';
 import MoveFeedback from './components/MoveFeedback.jsx';
 import MoveList from './components/MoveList.jsx';
-import FenBox from './components/FenBox.jsx';
 import ImportModal from './components/ImportModal.jsx';
 import SettingsModal from './components/SettingsModal.jsx';
 import { ar } from './i18n/ar.js';
@@ -33,11 +31,10 @@ export default function App() {
   // Live analysis runs continuously and follows the board. It is skipped only when the
   // side to move has no legal moves. (The best-move arrow setting never affects it.)
   const noLegalMoves = game.status.checkmate || game.status.stalemate;
-  const engine = useStockfish(game.fen, noLegalMoves, { autoStart: settings.autoAnalysis });
+  const engine = useStockfish(game.fen, noLegalMoves);
   const review = useGameReview(game.startFen, moves);
 
-  const [modal, setModal] = useState(null); // null | 'import' | 'settings'
-  const [tab, setTab] = useState('analysis');
+  const [modal, setModal] = useState(null); // null | 'import' | 'settings' | 'review'
   const [toast, setToast] = useState(null);
   const [livePaused, setLivePaused] = useState(false);
   const toastTimer = useRef(null);
@@ -66,13 +63,6 @@ export default function App() {
     }
   }, [livePaused, review.status, setLiveRunning]);
 
-  // When a review finishes, show the move list (with its marks and feedback).
-  const previousReviewStatus = useRef(review.status);
-  useEffect(() => {
-    if (previousReviewStatus.current === 'running' && review.status === 'done') setTab('moves');
-    previousReviewStatus.current = review.status;
-  }, [review.status]);
-
   /* ---------------- review result for the board / list ---------------- */
 
   // The result only counts while it still matches the move list on screen.
@@ -100,6 +90,7 @@ export default function App() {
 
   const openImport = useCallback(() => setModal('import'), []);
   const openSettings = useCallback(() => setModal('settings'), []);
+  const openReview = useCallback(() => setModal('review'), []);
   const closeModal = useCallback(() => setModal(null), []);
 
   const showToast = useCallback((text) => {
@@ -117,19 +108,17 @@ export default function App() {
 
   /* ---------------- keyboard ---------------- */
 
-  // The page is RTL, so the right arrow goes back in the game and left goes forward.
+  // Same direction as the on-screen buttons and the board: left = back, right = forward.
   const modalOpen = modal !== null;
   useEffect(() => {
     const onKey = (e) => {
       if (modalOpen || e.altKey || e.ctrlKey || e.metaKey || isTypingTarget(e.target)) return;
-      // Arrow keys on the tab strip move between tabs instead.
-      if (e.target && e.target.closest && e.target.closest('[role="tablist"]')) return;
       switch (e.key) {
-        case 'ArrowRight':
+        case 'ArrowLeft':
           e.preventDefault();
           goPrev();
           break;
-        case 'ArrowLeft':
+        case 'ArrowRight':
           e.preventDefault();
           goNext();
           break;
@@ -157,114 +146,85 @@ export default function App() {
   const nameOf = (c) => (c === 'w' ? headers.White || ar.white : headers.Black || ar.black);
   const eloOf = (c) => (c === 'w' ? headers.WhiteElo : headers.BlackElo);
   const isActive = (c) => !gameOver && status.turn === c;
-  const meta = [headers.Event, headers.Date, headers.Result].filter(Boolean).join(' · ');
-
-  const reviewBadge =
-    review.status === 'running' && review.progress.total
-      ? `${Math.round((review.progress.done / review.progress.total) * 100)}%`
-      : null;
-  const tabs = useMemo(
-    () => [
-      { id: 'analysis', label: ar.tabs.analysis },
-      { id: 'moves', label: ar.tabs.moves },
-      { id: 'review', label: ar.tabs.review, badge: reviewBadge },
-    ],
-    [reviewBadge],
-  );
-
   const theme = BOARD_THEMES[settings.boardTheme];
   // Display option only: when off, the engine still analyses and the eval bar still updates.
   const arrow = settings.showBestArrow ? engine.arrow : null;
+
+  const reviewLabel =
+    review.status === 'running' && review.progress.total
+      ? `${ar.review.running} ${Math.round((review.progress.done / review.progress.total) * 100)}%`
+      : reviewResult
+        ? ar.review.resultsTitle
+        : ar.review.title;
 
   return (
     <div className="app">
       <AppBar onImport={openImport} onNewGame={handleReset} onSettings={openSettings} />
 
-      <main className="layout">
-        <section className="stage">
-          <PlayerBar
-            color={topColor}
-            name={nameOf(topColor)}
-            elo={eloOf(topColor)}
-            active={isActive(topColor)}
+      <main className="screen">
+        <PlayerBar
+          color={topColor}
+          name={nameOf(topColor)}
+          elo={eloOf(topColor)}
+          active={isActive(topColor)}
+        />
+
+        <div className="board-row">
+          <EvalBar
+            line={engine.evalLine}
+            stale={engine.evalStale}
+            status={status}
+            orientation={orientation}
+            enabled={engine.enabled}
+            phase={engine.phase}
+            pausedByReview={livePaused}
           />
-
-          <div className="board-row">
-            <EvalBar
-              line={engine.evalLine}
-              stale={engine.evalStale}
-              status={status}
-              orientation={orientation}
-              enabled={engine.enabled}
-              phase={engine.phase}
-              pausedByReview={livePaused}
-            />
-            <ChessBoard
-              fen={game.fen}
-              orientation={orientation}
-              lastMove={game.lastMove}
-              status={status}
-              onMove={game.makeMove}
-              arrow={arrow}
-              badge={badge}
-              theme={theme}
-            />
-            <NavControls
-              canPrev={game.canPrev}
-              canNext={game.canNext}
-              canUndo={game.canUndo}
-              onFirst={goFirst}
-              onPrev={goPrev}
-              onNext={goNext}
-              onLast={goLast}
-              onFlip={game.flip}
-              onUndo={game.undo}
-            />
-          </div>
-
-          <PlayerBar
-            color={bottomColor}
-            name={nameOf(bottomColor)}
-            elo={eloOf(bottomColor)}
-            active={isActive(bottomColor)}
+          <ChessBoard
+            fen={game.fen}
+            orientation={orientation}
+            lastMove={game.lastMove}
+            status={status}
+            onMove={game.makeMove}
+            arrow={arrow}
+            badge={badge}
+            theme={theme}
           />
-          <StatusBanner status={status} />
-        </section>
+        </div>
 
-        <aside className="side">
-          <SidePanel tabs={tabs} active={tab} onChange={setTab}>
-            {tab === 'analysis' && (
-              <AnalysisPanel fen={game.fen} engine={engine} pausedByReview={livePaused} />
-            )}
+        <PlayerBar
+          color={bottomColor}
+          name={nameOf(bottomColor)}
+          elo={eloOf(bottomColor)}
+          active={isActive(bottomColor)}
+        />
 
-            {tab === 'moves' && (
-              <>
-                {reviewResult && (
-                  <MoveFeedback result={reviewResult} ply={game.ply} onSeek={game.goTo} />
-                )}
-                {meta && <p className="muted game-meta" dir="auto">{meta}</p>}
-                <MoveList
-                  moves={moves}
-                  marks={marks}
-                  ply={game.ply}
-                  startFullmove={game.startFullmove}
-                  onSelect={game.goTo}
-                />
-                <FenBox fen={game.fen} />
-              </>
-            )}
+        <EngineLine fen={game.fen} engine={engine} status={status} pausedByReview={livePaused} />
 
-            {tab === 'review' && (
-              <ReviewPanel
-                review={review}
-                onStart={startReview}
-                headers={headers}
-                hasMoves={movesCount > 0}
-                liveWasPaused={livePaused}
-              />
-            )}
-          </SidePanel>
-        </aside>
+        <MoveList
+          moves={moves}
+          marks={marks}
+          ply={game.ply}
+          startFullmove={game.startFullmove}
+          onSelect={game.goTo}
+        />
+
+        {reviewResult && <MoveFeedback result={reviewResult} ply={game.ply} onSeek={game.goTo} />}
+
+        <NavControls
+          canPrev={game.canPrev}
+          canNext={game.canNext}
+          canUndo={game.canUndo}
+          onFirst={goFirst}
+          onPrev={goPrev}
+          onNext={goNext}
+          onLast={goLast}
+          onFlip={game.flip}
+          onUndo={game.undo}
+        />
+
+        <button type="button" className="btn review-btn" onClick={openReview}>
+          {reviewLabel}
+        </button>
       </main>
 
       {modal === 'import' && (
@@ -274,6 +234,17 @@ export default function App() {
           onLoadFen={game.loadFen}
           onImported={showToast}
         />
+      )}
+      {modal === 'review' && (
+        <Modal title={ar.review.title} onClose={closeModal}>
+          <ReviewPanel
+            review={review}
+            onStart={startReview}
+            headers={headers}
+            hasMoves={movesCount > 0}
+            liveWasPaused={livePaused}
+          />
+        </Modal>
       )}
       {modal === 'settings' && (
         <SettingsModal settings={settings} onChange={updateSettings} onClose={closeModal} />

@@ -5,7 +5,7 @@ Import a game, watch Stockfish evaluate every position live, and run a full-game
 move classifications (Brilliant … Blunder), per-player accuracy and statistics.
 Everything runs in the browser.
 
-**Status: Phase 6 (UI/UX redesign), version 1.1.0.**
+**Status: Phase 6 follow-up (simplified mobile layout), version 1.1.1.**
 
 ## Requirements
 
@@ -38,21 +38,25 @@ single-threaded, so no special headers (COOP/COEP) are needed.
 
 ## The interface
 
-- **Top bar**: «استيراد PGN» (opens the import dialog), new game, and settings.
-- **Board stage** (centre / top on phones):
-  - **Evaluation bar on the left**, always visible. It follows the live engine continuously, keeps
-    showing the last evaluation (dimmed) while a new position is being searched, follows board
-    flipping, and shows `1-0` / `0-1` / `½` when the game is over.
-  - **Navigation rail on the right**, within thumb reach on phones: first, previous, next, last,
-    then flip and undo. Press and hold previous / next to scrub through the game. "Up" goes back,
-    "down" goes forward.
-  - Player strips above and below the board (name, Elo if the PGN has it, whose turn it is).
-- **Side panel** (under the board on phones), three tabs:
-  - **التحليل**: live engine analysis (score, depth, best move, 1–3 lines), start / stop, depth
-    slider and number of lines.
-  - **النقلات**: move list with review marks, feedback for the current move and
-    previous / next mistake buttons (after a review), and the current FEN with a copy button.
-  - **المراجعة**: full-game review with progress, cancel, accuracy and statistics.
+A single column, board first (modelled on the usual mobile analysis screens). Top to bottom:
+
+- **Top bar**: «استيراد PGN» (opens the import dialog), new game, settings.
+- **Player strip** (opponent), **board**, **player strip** (you). The board fills the full width
+  on phones (minus an 8 px strip). On large screens the column is capped so it fits the window height.
+- **Thin evaluation bar** on the left edge of the board (8 px wide). It follows the live engine,
+  keeps the last evaluation (dimmed) while a new position is searched, follows board flipping and
+  shows the result when the game is over.
+- **Engine line**: score, depth and the engine's best move in one row. It also shows loading, an
+  error with a retry button, "paused during review", and check / game-over messages.
+- **Move list**: one horizontally scrolling row, the current move kept in view. Review marks appear
+  here after a review, with a one-row verdict and previous / next mistake buttons below it.
+- **Navigation row**: flip, first, previous, next, last, undo. Press and hold previous / next to
+  scrub through the game.
+- **Review button**: opens the game-review dialog (depth, start / cancel, progress, results). The
+  button shows the progress while a review runs, even with the dialog closed.
+
+One Stockfish engine analyses continuously at depth 18 (MultiPV 1) and follows every position.
+There are no tabs, side panels or separate analysis / moves / review screens.
 
 ### Import dialog
 
@@ -67,11 +71,10 @@ Saved in this browser (localStorage):
 |---|---|---|
 | Show best-move arrow | **off** | Display only. The engine keeps analysing and the evaluation bar keeps updating whether the arrow is shown or not. |
 | Board colours | Ocean | Ocean, Classic, Walnut, Slate |
-| Start live analysis automatically | on | Applies when the app opens. When off, start the engine from the analysis tab. |
 
 ### Keyboard
 
-Right = previous move, Left = next move (mirrored for RTL), Home / End = first / last move,
+Left = previous move, Right = next move (same direction as the on-screen buttons), Home / End = first / last move,
 Esc closes dialogs and the promotion picker.
 
 ## Features
@@ -87,10 +90,10 @@ Esc closes dialogs and the promotion picker.
   rest of the game
 
 **Live analysis (Stockfish 19, lite, single-threaded WASM, in a Web Worker)**
-- Starts automatically and analyses continuously as moves are played or navigated
+- Starts automatically and analyses continuously (depth 18) as moves are played or navigated
 - UCI wrapper with init timeout, error handling and retry
 - Evaluation (White's point of view, `#3` for mate), depth, speed, best move, principal variations
-- Depth slider (8–30), 1–3 lines, start / stop
+- Retry button if the engine fails to start
 
 **Game review**
 - Full-game analysis at a fixed depth (fast 10 / balanced 14 / accurate 18, 2 lines) with its own
@@ -99,7 +102,7 @@ Esc closes dialogs and the promotion picker.
   and says so
 - Centipawn loss, move classification, player accuracy, statistics
 - Classification badges on the destination square of the move being viewed, and marks in the
-  move list
+  move strip
 
 ### How moves are classified
 
@@ -129,7 +132,9 @@ volatility-weighted mean and a harmonic mean (the idea Lichess uses).
 - Only the main line is kept: there are no variations. PGN comments and variations are ignored.
 - The review covers the current move list; any change to it discards the review.
 - Only standard chess (no Chess960).
-- The evaluation graph from earlier versions was removed in Phase 6.
+- The evaluation graph was removed in Phase 6. In 1.1.1 the manual depth / line-count controls, the
+  engine start / stop switch, the "auto-start" setting and the on-screen FEN box were removed with the
+  panels. Live analysis is always on at depth 18.
 
 ## Troubleshooting
 
@@ -137,7 +142,7 @@ volatility-weighted mean and a harmonic mean (the idea Lichess uses).
   `engine.json` and a `stockfish-…-lite-single.js` + `.wasm` pair, then restart `npm run dev`.
   On a deployed site, check that the `engine/` folder was uploaded and `.wasm` has the right MIME type.
   Until the engine loads, the evaluation bar stays neutral.
-- **Engine start-up timeout**: slow connection or device; press «إعادة المحاولة» in the analysis tab.
+- **Engine start-up timeout**: slow connection or device; press «إعادة المحاولة» in the engine line.
 - **A blank page**: an error boundary shows an Arabic message with a reload button; details are in
   the browser console.
 
@@ -149,9 +154,9 @@ src/
   main.jsx                     entry (error boundary, styles)
   App.jsx                      composition, keyboard, live-analysis <-> review hand-off
   components/
-    AppBar, PlayerBar, StatusBanner, EvalBar, ChessBoard, NavControls (right-hand rail),
-    SquareBadge, PromotionDialog, SidePanel (tabs), AnalysisPanel, MoveList, MoveFeedback,
-    FenBox, ReviewPanel, Modal, ImportModal, SettingsModal, ErrorBoundary, icons
+    AppBar, PlayerBar, EvalBar (thin), ChessBoard, EngineLine, MoveList (horizontal),
+    MoveFeedback, NavControls (bottom row), SquareBadge, PromotionDialog, ReviewPanel,
+    Modal, ImportModal, SettingsModal, ErrorBoundary, icons
   engine/stockfishEngine.js    Web Worker + UCI wrapper, info-line parser
   engine/gameReview.js         full-game position evaluation (own engine, abortable)
   hooks/useChessGame.js        game state (reducer)
@@ -173,7 +178,8 @@ src/
 3. Game review engine ✔
 4. Game review interface ✔
 5. Final integration and polish ✔
-6. UI/UX redesign ✔ (this release)
+6. UI/UX redesign ✔
+6.1 Simplified, board-first mobile layout ✔ (this release)
 
 ## License note
 
@@ -185,6 +191,6 @@ this app, make sure you comply with that license.
 This project was written and reviewed by reading the code only (plus syntax parsing and static
 checks that all imports, Arabic string keys and CSS classes resolve). It has **not** been installed,
 built or run by its author. The engine-loading path, the review scoring and all browser
-interactions (drag and drop, the right-hand rail and press-and-hold stepping, the evaluation bar,
-modals, settings persistence, mobile layout) are therefore untested. Please report anything that
+interactions (drag and drop, press-and-hold stepping, the evaluation bar, the horizontal move strip,
+modals, settings persistence, mobile layout and board size) are therefore untested. Please report anything that
 fails after `npm install` / `npm run dev`.

@@ -34,13 +34,6 @@ export const ar = {
     settings: 'الإعدادات',
   },
 
-  tabs: {
-    groupLabel: 'أقسام التحليل',
-    analysis: 'التحليل',
-    moves: 'النقلات',
-    review: 'المراجعة',
-  },
-
   importModal: {
     title: 'استيراد مباراة',
     tabs: 'نوع الاستيراد',
@@ -62,8 +55,6 @@ export const ar = {
     arrow: 'عرض سهم أفضل نقلة',
     arrowHint:
       'خيار شخصي للعرض فقط. يستمر المحرك بالتحليل وتحديث التقييم سواء عرضت السهم أم لا.',
-    auto: 'تشغيل التحليل المباشر تلقائياً',
-    autoHint: 'يبدأ المحرك عند فتح التطبيق. عند إيقافه، شغّل المحرك يدوياً من تبويب «التحليل».',
     saved: 'تُحفظ الإعدادات في هذا المتصفح.',
   },
 
@@ -73,11 +64,6 @@ export const ar = {
     off: 'التحليل المباشر متوقف',
     stale: 'جارٍ تحديث التقييم…',
     pausedByReview: 'التحليل المباشر متوقف مؤقتاً أثناء المراجعة',
-  },
-
-  fen: {
-    copy: 'نسخ FEN',
-    copied: 'تم النسخ',
   },
 
   confirmTruncate:
@@ -93,7 +79,7 @@ export const ar = {
 
   moves: {
     title: 'النقلات',
-    empty: 'لم تُلعب أي نقلة بعد. حرّك قطعة على اللوحة أو استورد مباراة.',
+    empty: 'لم تُلعب أي نقلة بعد. حرّك قطعة أو استورد مباراة.',
     placeholderCell: '…',
   },
 
@@ -107,7 +93,6 @@ export const ar = {
   },
 
   status: {
-    toMove: 'الدور',
     turn: (side) => `الدور على ${side}`,
     check: (side) => `كش! الدور على ${side}`,
     checkmate: (winner) => `كش مات — فاز ${winner}`,
@@ -144,6 +129,7 @@ export const ar = {
 
   engine: {
     title: 'تحليل المحرك',
+    depthShort: (d) => `عمق ${d}`,
     subtitle: 'Stockfish',
     start: 'تشغيل المحرك',
     stop: 'إيقاف المحرك',

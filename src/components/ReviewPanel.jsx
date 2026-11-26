@@ -25,8 +25,6 @@ function ReviewPanel({ review, onStart, headers, hasMoves, liveWasPaused }) {
 
   return (
     <section className="review" aria-label={ar.review.title}>
-      <h2 className="section-title">{ar.review.title}</h2>
-
       <div className="setting">
         <label className="field-label" htmlFor="review-depth">
           {ar.review.depthLabel}

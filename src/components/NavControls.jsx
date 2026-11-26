@@ -6,11 +6,11 @@ const HOLD_DELAY_MS = 380;
 const HOLD_REPEAT_MS = 90;
 
 /**
- * Rail button. With `repeat`, holding the button keeps stepping (press and hold to
+ * Navigation button. With `repeat`, holding the button keeps stepping (press and hold to
  * scrub through the game); a quick tap steps once. Keyboard activation (Enter /
  * Space) goes through the normal click handler.
  */
-function RailButton({ icon, label, onClick, disabled, className = '', repeat = false }) {
+function NavButton({ icon, label, onClick, disabled, className = '', repeat = false }) {
   const timers = useRef({ delay: null, interval: null });
   const usedPointer = useRef(false);
 
@@ -65,21 +65,20 @@ function RailButton({ icon, label, onClick, disabled, className = '', repeat = f
   return (
     <button
       type="button"
-      className={`rail-btn ${className}`}
+      className={`nav-btn ${className}`}
       disabled={disabled}
       title={label}
       aria-label={label}
       {...repeatProps}
     >
-      <Icon name={icon} size={26} />
+      <Icon name={icon} size={28} />
     </button>
   );
 }
 
 /**
- * Vertical control rail placed on the RIGHT of the board (easy to reach with the
- * right thumb). Top to bottom: first, previous, next, last, then flip and undo.
- * "Up" goes back in the game, "down" goes forward. New game lives in the top bar.
+ * One row under the move list: flip, first, previous, next, last, undo. Left to right
+ * like the board. Press and hold previous / next to scrub through the game.
  */
 function NavControls({
   canPrev,
@@ -93,17 +92,13 @@ function NavControls({
   onUndo,
 }) {
   return (
-    <div className="rail" role="group" aria-label={ar.nav.groupLabel}>
-      <div className="rail-main">
-        <RailButton className="rail-minor" icon="first" label={ar.nav.first} onClick={onFirst} disabled={!canPrev} />
-        <RailButton className="rail-major" icon="prev" label={ar.nav.prev} onClick={onPrev} disabled={!canPrev} repeat />
-        <RailButton className="rail-major" icon="next" label={ar.nav.next} onClick={onNext} disabled={!canNext} repeat />
-        <RailButton className="rail-minor" icon="last" label={ar.nav.last} onClick={onLast} disabled={!canNext} />
-      </div>
-      <div className="rail-extra">
-        <RailButton className="rail-tool" icon="flip" label={ar.nav.flip} onClick={onFlip} />
-        <RailButton className="rail-tool" icon="undo" label={ar.nav.undo} onClick={onUndo} disabled={!canUndo} />
-      </div>
+    <div className="navbar" role="group" aria-label={ar.nav.groupLabel}>
+      <NavButton className="nav-tool" icon="flip" label={ar.nav.flip} onClick={onFlip} />
+      <NavButton icon="first" label={ar.nav.first} onClick={onFirst} disabled={!canPrev} />
+      <NavButton className="nav-main" icon="prev" label={ar.nav.prev} onClick={onPrev} disabled={!canPrev} repeat />
+      <NavButton className="nav-main" icon="next" label={ar.nav.next} onClick={onNext} disabled={!canNext} repeat />
+      <NavButton icon="last" label={ar.nav.last} onClick={onLast} disabled={!canNext} />
+      <NavButton className="nav-tool" icon="undo" label={ar.nav.undo} onClick={onUndo} disabled={!canUndo} />
     </div>
   );
 }

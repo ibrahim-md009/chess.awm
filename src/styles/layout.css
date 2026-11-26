@@ -1,7 +1,6 @@
 /* ==========================================================================
-   Page layout (mobile first).
-   Phone:   app bar, then the board stage, then the tabbed panel.
-   Desktop: board stage on one side, tabbed panel on the other.
+   Page layout: one column, board first.
+   app bar, player, board, player, engine line, move strip, controls.
    ========================================================================== */
 
 .app {
@@ -22,9 +21,9 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 0 12px;
-  padding-inline: max(12px, env(safe-area-inset-left)) max(12px, env(safe-area-inset-right));
-  background: rgba(13, 16, 23, 0.82);
+  padding: 0 10px;
+  padding-inline: max(10px, env(safe-area-inset-left)) max(10px, env(safe-area-inset-right));
+  background: rgba(13, 16, 23, 0.9);
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border-soft);
@@ -33,7 +32,7 @@
 .brand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
 }
 
@@ -41,19 +40,18 @@
   display: grid;
   place-items: center;
   flex: none;
-  width: 36px;
-  height: 36px;
-  border-radius: 11px;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
   background: linear-gradient(135deg, var(--accent), #6c8cff);
   color: #07121b;
-  font-size: 1.3rem;
+  font-size: 1.15rem;
   line-height: 1;
 }
 
 .brand-title {
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 800;
-  letter-spacing: 0.1px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -62,49 +60,38 @@
 .appbar-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex: none;
 }
 
-/* ---------- main grid ---------- */
+/* ---------- the screen ----------
+   Full width on phones (the board takes the whole width minus the 8px eval strip).
+   On large screens it is capped so the whole column still fits the window height. */
 
-.layout {
+.screen {
   width: 100%;
-  max-width: 1320px;
-  margin: 0 auto;
-  padding: 10px 10px 28px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 14px;
-  align-items: start;
-}
-
-/* ---------- board stage ----------
-   --board-max keeps the whole stage (players + board) inside the viewport height. */
-
-.stage {
-  --board-max: clamp(240px, calc(100dvh - var(--appbar-h) - 170px), 780px);
-  width: 100%;
+  max-width: 640px;
   margin-inline: auto;
-  max-width: calc(var(--board-max) + var(--eval-w) + var(--rail-w) + 2 * var(--gap));
   display: flex;
   flex-direction: column;
-  gap: 8px;
 }
 
-/* Fixed visual order regardless of page direction:
-   evaluation bar on the LEFT, board in the middle, controls on the RIGHT (thumb side). */
+@media (min-width: 700px) {
+  .screen {
+    max-width: min(640px, max(380px, calc(100dvh - var(--appbar-h) - 250px)));
+  }
+}
+
 .board-row {
   direction: ltr;
-  display: grid;
-  grid-template-columns: var(--eval-w) minmax(0, 1fr) var(--rail-w);
-  gap: var(--gap);
+  display: flex;
   align-items: stretch;
 }
 
 .board-square {
   position: relative;
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   aspect-ratio: 1 / 1;
   direction: ltr; /* files a-h always run left to right */
   touch-action: manipulation;
@@ -112,51 +99,6 @@
 
 .board-square .promo-card {
   direction: rtl;
-}
-
-/* ---------- side panel ---------- */
-
-.side {
-  min-width: 0;
-}
-
-@media (min-width: 960px) {
-  .layout {
-    grid-template-columns: minmax(0, 1fr) 410px;
-    gap: 24px;
-    padding: 18px 22px 32px;
-  }
-
-  .side {
-    position: sticky;
-    top: calc(var(--appbar-h) + 16px);
-  }
-
-  .side-card {
-    max-height: calc(100dvh - var(--appbar-h) - 32px);
-  }
-
-  .tab-body {
-    overflow-y: auto;
-    min-height: 0;
-  }
-}
-
-/* ---------- phones ---------- */
-
-@media (max-width: 480px) {
-  .layout {
-    padding: 8px 8px 24px;
-    gap: 12px;
-  }
-
-  .brand-title {
-    font-size: 0.98rem;
-  }
-
-  .appbar {
-    padding-inline: 10px;
-  }
 }
 
 @media (max-width: 359px) {
@@ -167,32 +109,5 @@
   .appbar .btn-primary {
     width: 44px;
     padding: 0;
-  }
-}
-
-/* ---------- phones in landscape: board left, panel right ---------- */
-
-@media (orientation: landscape) and (max-height: 520px) and (min-width: 640px) and (max-width: 959px) {
-  .layout {
-    grid-template-columns: minmax(0, 1fr) 330px;
-    gap: 12px;
-  }
-
-  .stage {
-    --board-max: max(180px, calc(100dvh - var(--appbar-h) - 120px));
-  }
-
-  .side {
-    position: sticky;
-    top: calc(var(--appbar-h) + 8px);
-  }
-
-  .side-card {
-    max-height: calc(100dvh - var(--appbar-h) - 16px);
-  }
-
-  .tab-body {
-    overflow-y: auto;
-    min-height: 0;
   }
 }

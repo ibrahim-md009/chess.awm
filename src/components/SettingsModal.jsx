@@ -79,13 +79,6 @@ export default function SettingsModal({ settings, onChange, onClose }) {
           label={ar.settings.arrow}
           hint={ar.settings.arrowHint}
         />
-        <Switch
-          id="set-auto"
-          checked={settings.autoAnalysis}
-          onChange={(v) => onChange({ autoAnalysis: v })}
-          label={ar.settings.auto}
-          hint={ar.settings.autoHint}
-        />
       </section>
 
       <p className="muted hint">{ar.settings.saved}</p>

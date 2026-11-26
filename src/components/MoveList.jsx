@@ -43,20 +43,16 @@ function MoveList({ moves, marks, ply, startFullmove, onSelect }) {
   const activeRef = useRef(null);
   const containerRef = useRef(null);
 
-  // Keep the active move visible without scrolling the whole page.
+  // Keep the active move centred in the strip without scrolling the page.
   useEffect(() => {
     const el = activeRef.current;
     const box = containerRef.current;
-    if (!el || !box) {
-      if (box && ply === 0) box.scrollTop = 0;
+    if (!box) return;
+    if (!el) {
+      if (ply === 0) box.scrollLeft = 0;
       return;
     }
-    const top = el.offsetTop;
-    const bottom = top + el.offsetHeight;
-    if (top < box.scrollTop) box.scrollTop = top - 8;
-    else if (bottom > box.scrollTop + box.clientHeight) {
-      box.scrollTop = bottom - box.clientHeight + 8;
-    }
+    box.scrollLeft = el.offsetLeft - (box.clientWidth - el.offsetWidth) / 2;
   }, [ply, moves.length]);
 
   const markAt = (i) => (marks && i !== null && marks[i] ? marks[i] : null);
@@ -66,31 +62,29 @@ function MoveList({ moves, marks, ply, startFullmove, onSelect }) {
       {rows.length === 0 ? (
         <p className="muted moves-empty">{ar.moves.empty}</p>
       ) : (
-        <div className="moves-scroll" ref={containerRef}>
-          <ol className="moves-table">
-            {rows.map((row) => (
-              <li className="move-row" key={`${row.num}-${row.w ?? 'x'}-${row.b ?? 'x'}`}>
-                <span className="move-num">{row.num}.</span>
-                <MoveCell
-                  index={row.w}
-                  move={row.w !== null ? moves[row.w] : null}
-                  mark={markAt(row.w)}
-                  active={row.w !== null && row.w + 1 === ply}
-                  onSelect={onSelect}
-                  cellRef={activeRef}
-                />
-                <MoveCell
-                  index={row.b}
-                  move={row.b !== null ? moves[row.b] : null}
-                  mark={markAt(row.b)}
-                  active={row.b !== null && row.b + 1 === ply}
-                  onSelect={onSelect}
-                  cellRef={activeRef}
-                />
-              </li>
-            ))}
-          </ol>
-        </div>
+        <ol className="moves-strip" ref={containerRef} dir="ltr">
+          {rows.map((row) => (
+            <li className="move-pair" key={`${row.num}-${row.w ?? 'x'}-${row.b ?? 'x'}`}>
+              <span className="move-num">{row.num}.</span>
+              <MoveCell
+                index={row.w}
+                move={row.w !== null ? moves[row.w] : null}
+                mark={markAt(row.w)}
+                active={row.w !== null && row.w + 1 === ply}
+                onSelect={onSelect}
+                cellRef={activeRef}
+              />
+              <MoveCell
+                index={row.b}
+                move={row.b !== null ? moves[row.b] : null}
+                mark={markAt(row.b)}
+                active={row.b !== null && row.b + 1 === ply}
+                onSelect={onSelect}
+                cellRef={activeRef}
+              />
+            </li>
+          ))}
+        </ol>
       )}
     </div>
   );

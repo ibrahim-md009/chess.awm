@@ -14,12 +14,10 @@ export const BOARD_THEMES = {
  * showBestArrow  – draw the engine's best move on the board (OFF by default).
  *                  Only a display option: analysis always keeps running.
  * boardTheme     – key of BOARD_THEMES.
- * autoAnalysis   – start live analysis automatically when the app opens.
  */
 export const DEFAULT_SETTINGS = {
   showBestArrow: false,
   boardTheme: 'ocean',
-  autoAnalysis: true,
 };
 
 /** Accept only known keys with valid values, so a corrupted store can't break the UI. */
@@ -31,8 +29,6 @@ function sanitize(raw) {
     boardTheme: Object.prototype.hasOwnProperty.call(BOARD_THEMES, s.boardTheme)
       ? s.boardTheme
       : DEFAULT_SETTINGS.boardTheme,
-    autoAnalysis:
-      typeof s.autoAnalysis === 'boolean' ? s.autoAnalysis : DEFAULT_SETTINGS.autoAnalysis,
   };
 }
 

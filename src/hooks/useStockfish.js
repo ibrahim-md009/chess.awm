@@ -4,7 +4,7 @@ import { parseUciMove } from '../utils/analysis.js';
 
 export const MIN_DEPTH = 8;
 export const MAX_DEPTH = 30;
-export const DEFAULT_DEPTH = 16;
+export const DEFAULT_DEPTH = 18; // good strength; the lite WASM engine stays responsive
 export const MAX_LINES = 3;
 
 const EMPTY = { fen: null, lines: [], searching: false };

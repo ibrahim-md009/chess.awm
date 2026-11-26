@@ -45,23 +45,14 @@
   --shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
 
   /* sizing */
-  --appbar-h: 56px;
-  --eval-w: 20px;
-  --rail-w: 48px;
-  --gap: 6px;
+  --appbar-h: 48px;
+  --eval-w: 8px;
 
   /* type */
   --font: 'Segoe UI', 'Noto Naskh Arabic', 'Noto Sans Arabic', Tahoma, system-ui, -apple-system, sans-serif;
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
-@media (min-width: 960px) {
-  :root {
-    --eval-w: 28px;
-    --rail-w: 56px;
-    --gap: 8px;
-  }
-}
 
 *,
 *::before,

@@ -1,5 +1,4 @@
 import { memo } from 'react';
-import { ar } from '../i18n/ar.js';
 
 /** One player's strip above / below the board. */
 function PlayerBar({ color, name, elo, active }) {
@@ -8,7 +7,6 @@ function PlayerBar({ color, name, elo, active }) {
       <span className={`player-dot player-dot-${color}`} aria-hidden="true" />
       <span className="player-name" dir="auto">{name}</span>
       {elo && <span className="player-elo" dir="ltr">{elo}</span>}
-      {active && <span className="turn-pill">{ar.status.toMove}</span>}
     </div>
   );
 }
