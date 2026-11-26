@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, memo } from 'react';
 import { buildMoveRows } from '../utils/chess.js';
+import { Icon } from './icons.jsx';
 import { CLASS_META } from '../utils/classification.js';
 import { ar } from '../i18n/ar.js';
 
@@ -55,10 +56,23 @@ function MoveList({ moves, marks, ply, startFullmove, onSelect }) {
     box.scrollLeft = el.offsetLeft - (box.clientWidth - el.offsetWidth) / 2;
   }, [ply, moves.length]);
 
+  const scrollBy = (dir) => {
+    const box = containerRef.current;
+    if (box) box.scrollBy({ left: dir * box.clientWidth * 0.7, behavior: 'smooth' });
+  };
+
   const markAt = (i) => (marks && i !== null && marks[i] ? marks[i] : null);
 
   return (
     <div className="moves" role="region" aria-label={ar.moves.title}>
+      <button
+        type="button"
+        className="moves-arrow"
+        onClick={() => scrollBy(-1)}
+        aria-label={ar.bottomBar.scrollBack}
+      >
+        <Icon name="prev" size={26} />
+      </button>
       {rows.length === 0 ? (
         <p className="muted moves-empty">{ar.moves.empty}</p>
       ) : (
@@ -86,6 +100,14 @@ function MoveList({ moves, marks, ply, startFullmove, onSelect }) {
           ))}
         </ol>
       )}
+      <button
+        type="button"
+        className="moves-arrow"
+        onClick={() => scrollBy(1)}
+        aria-label={ar.bottomBar.scrollForward}
+      >
+        <Icon name="next" size={26} />
+      </button>
     </div>
   );
 }

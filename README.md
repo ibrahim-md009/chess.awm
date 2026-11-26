@@ -5,7 +5,7 @@ Import a game, watch Stockfish evaluate every position live, and run a full-game
 move classifications (Brilliant … Blunder), per-player accuracy and statistics.
 Everything runs in the browser.
 
-**Status: Phase 6 follow-up (simplified mobile layout), version 1.1.1.**
+**Status: Phase 6 follow-up (mobile layout modelled on the Chess.com app screenshot), version 1.2.0.**
 
 ## Requirements
 
@@ -38,25 +38,23 @@ single-threaded, so no special headers (COOP/COEP) are needed.
 
 ## The interface
 
-A single column, board first (modelled on the usual mobile analysis screens). Top to bottom:
+One column, board first, laid out like the Chess.com mobile analysis screen (dark `#262522`
+background, wood board, green accents). Top to bottom:
 
-- **Top bar**: «استيراد PGN» (opens the import dialog), new game, settings.
-- **Player strip** (opponent), **board**, **player strip** (you). The board fills the full width
-  on phones (minus an 8 px strip). On large screens the column is capped so it fits the window height.
-- **Thin evaluation bar** on the left edge of the board (8 px wide). It follows the live engine,
-  keeps the last evaluation (dimmed) while a new position is searched, follows board flipping and
-  shows the result when the game is over.
-- **Engine line**: score, depth and the engine's best move in one row. It also shows loading, an
-  error with a retry button, "paused during review", and check / game-over messages.
-- **Move list**: one horizontally scrolling row, the current move kept in view. Review marks appear
-  here after a review, with a one-row verdict and previous / next mistake buttons below it.
-- **Navigation row**: flip, first, previous, next, last, undo. Press and hold previous / next to
-  scrub through the game.
-- **Review button**: opens the game-review dialog (depth, start / cancel, progress, results). The
-  button shows the progress while a review runs, even with the dialog closed.
+- **Top bar** (icons only): import (left, opens the PGN / FEN dialog), title, settings (right).
+- **Engine line**: score, depth, best move; also loading / error + retry / paused-during-review and
+  check / game-over messages.
+- **Player strip**, the **board** (edge to edge, wood colours, coordinates inside the squares),
+  **player strip**. A 6 px evaluation bar is drawn over the board's left edge, so the board keeps
+  the full width. It follows the live engine and board flipping.
+- **Move strip**: one row with a chevron at each end that scrolls it. The current move is kept in
+  view. After a review, marks appear on the moves and a one-line verdict (with previous / next
+  mistake buttons) appears under the strip.
+- **Bottom bar**: **Options** (flip board, undo, first move, last move), **New** (new game), the
+  raised green **review** button (opens the game-review dialog; shows the percentage while a review
+  runs), **Back** and **Forward** (press and hold to scrub through the game).
 
-One Stockfish engine analyses continuously at depth 18 (MultiPV 1) and follows every position.
-There are no tabs, side panels or separate analysis / moves / review screens.
+One Stockfish engine analyses continuously at depth 18 and follows every position.
 
 ### Import dialog
 
@@ -70,11 +68,11 @@ Saved in this browser (localStorage):
 | Setting | Default | Notes |
 |---|---|---|
 | Show best-move arrow | **off** | Display only. The engine keeps analysing and the evaluation bar keeps updating whether the arrow is shown or not. |
-| Board colours | Ocean | Ocean, Classic, Walnut, Slate |
+| Board colours | Wood | Wood, Ocean, Classic, Walnut, Slate |
 
 ### Keyboard
 
-Left = previous move, Right = next move (same direction as the on-screen buttons), Home / End = first / last move,
+Left = previous move, Right = next move, Home / End = first / last move,
 Esc closes dialogs and the promotion picker.
 
 ## Features
@@ -124,6 +122,10 @@ volatility-weighted mean and a harmonic mean (the idea Lichess uses).
 
 ## Limitations
 
+- The layout, colours, spacing and icon style follow the reference screenshot, but the chess pieces are
+  the board library's default set and the icons are simple open-source-style glyphs, so they are close
+  to, not identical with, the Chess.com originals.
+
 - Classification, Brilliant / Great detection and accuracy are **our own approximations** of the
   Lichess / Chess.com ideas, computed at a fixed depth with a small WASM engine. Numbers will not
   match those sites exactly. There is no opening-book detection.
@@ -155,7 +157,7 @@ src/
   App.jsx                      composition, keyboard, live-analysis <-> review hand-off
   components/
     AppBar, PlayerBar, EvalBar (thin), ChessBoard, EngineLine, MoveList (horizontal),
-    MoveFeedback, NavControls (bottom row), SquareBadge, PromotionDialog, ReviewPanel,
+    MoveFeedback, BottomBar, OptionsModal, SquareBadge, PromotionDialog, ReviewPanel,
     Modal, ImportModal, SettingsModal, ErrorBoundary, icons
   engine/stockfishEngine.js    Web Worker + UCI wrapper, info-line parser
   engine/gameReview.js         full-game position evaluation (own engine, abortable)
@@ -179,7 +181,8 @@ src/
 4. Game review interface ✔
 5. Final integration and polish ✔
 6. UI/UX redesign ✔
-6.1 Simplified, board-first mobile layout ✔ (this release)
+6.1 Simplified, board-first mobile layout ✔
+6.2 Chess.com-app-style layout (this release)
 
 ## License note
 

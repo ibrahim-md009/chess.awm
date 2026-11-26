@@ -5,24 +5,24 @@
 
 :root {
   /* surfaces */
-  --bg: #0d1017;
-  --bg-2: #131724;
-  --surface: #181d2b;
-  --surface-2: #212738;
-  --surface-3: #2a3148;
-  --border: #323a55;
-  --border-soft: #252c42;
+  --bg: #262522;
+  --bg-2: #262522;
+  --surface: #2b2a27;
+  --surface-2: #363431;
+  --surface-3: #44423e;
+  --border: #4a4845;
+  --border-soft: #353330;
 
   /* text */
-  --text: #eef1f8;
-  --text-2: #b9bfd3;
-  --muted: #8991ab;
+  --text: #ffffff;
+  --text-2: #bababa;
+  --muted: #8b8987;
 
   /* brand */
-  --accent: #3ddbb0;
-  --accent-strong: #27c79c;
-  --accent-ink: #052a21;
-  --accent-soft: rgba(61, 219, 176, 0.14);
+  --accent: #81b64c;
+  --accent-strong: #6f9f3c;
+  --accent-ink: #10200a;
+  --accent-soft: rgba(129, 182, 76, 0.2);
 
   /* feedback */
   --warn: #f2c14e;
@@ -45,8 +45,8 @@
   --shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
 
   /* sizing */
-  --appbar-h: 48px;
-  --eval-w: 8px;
+  --appbar-h: 56px;
+  --eval-w: 6px;
 
   /* type */
   --font: 'Segoe UI', 'Noto Naskh Arabic', 'Noto Sans Arabic', Tahoma, system-ui, -apple-system, sans-serif;
@@ -77,11 +77,7 @@ body {
 body {
   min-height: 100vh;
   min-height: 100dvh;
-  background:
-    radial-gradient(1100px 520px at 85% -10%, rgba(61, 219, 176, 0.07), transparent 60%),
-    radial-gradient(900px 480px at -10% 110%, rgba(108, 140, 255, 0.06), transparent 60%),
-    var(--bg);
-  background-attachment: fixed;
+  background: var(--bg);
 }
 
 button,

@@ -4,6 +4,7 @@ const STORAGE_KEY = 'chess-review-settings-v1';
 
 /** Board colour themes (light square / dark square). */
 export const BOARD_THEMES = {
+  wood: { light: '#ecd0a2', dark: '#8c5b31' },
   ocean: { light: '#e3ebf2', dark: '#6f93b3' },
   classic: { light: '#eeeed2', dark: '#769656' },
   walnut: { light: '#f0d9b5', dark: '#b58863' },
@@ -17,7 +18,7 @@ export const BOARD_THEMES = {
  */
 export const DEFAULT_SETTINGS = {
   showBestArrow: false,
-  boardTheme: 'ocean',
+  boardTheme: 'wood',
 };
 
 /** Accept only known keys with valid values, so a corrupted store can't break the UI. */

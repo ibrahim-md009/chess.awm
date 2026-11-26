@@ -7,7 +7,8 @@ import AppBar from './components/AppBar.jsx';
 import PlayerBar from './components/PlayerBar.jsx';
 import EvalBar from './components/EvalBar.jsx';
 import ChessBoard from './components/ChessBoard.jsx';
-import NavControls from './components/NavControls.jsx';
+import BottomBar from './components/BottomBar.jsx';
+import OptionsModal from './components/OptionsModal.jsx';
 import EngineLine from './components/EngineLine.jsx';
 import Modal from './components/Modal.jsx';
 import ReviewPanel from './components/ReviewPanel.jsx';
@@ -34,7 +35,7 @@ export default function App() {
   const engine = useStockfish(game.fen, noLegalMoves);
   const review = useGameReview(game.startFen, moves);
 
-  const [modal, setModal] = useState(null); // null | 'import' | 'settings' | 'review'
+  const [modal, setModal] = useState(null); // null | 'import' | 'settings' | 'review' | 'options'
   const [toast, setToast] = useState(null);
   const [livePaused, setLivePaused] = useState(false);
   const toastTimer = useRef(null);
@@ -91,6 +92,7 @@ export default function App() {
   const openImport = useCallback(() => setModal('import'), []);
   const openSettings = useCallback(() => setModal('settings'), []);
   const openReview = useCallback(() => setModal('review'), []);
+  const openOptions = useCallback(() => setModal('options'), []);
   const closeModal = useCallback(() => setModal(null), []);
 
   const showToast = useCallback((text) => {
@@ -150,18 +152,18 @@ export default function App() {
   // Display option only: when off, the engine still analyses and the eval bar still updates.
   const arrow = settings.showBestArrow ? engine.arrow : null;
 
-  const reviewLabel =
+  const reviewPercent =
     review.status === 'running' && review.progress.total
-      ? `${ar.review.running} ${Math.round((review.progress.done / review.progress.total) * 100)}%`
-      : reviewResult
-        ? ar.review.resultsTitle
-        : ar.review.title;
+      ? Math.round((review.progress.done / review.progress.total) * 100)
+      : null;
 
   return (
     <div className="app">
-      <AppBar onImport={openImport} onNewGame={handleReset} onSettings={openSettings} />
+      <AppBar onImport={openImport} onSettings={openSettings} />
 
       <main className="screen">
+        <EngineLine fen={game.fen} engine={engine} status={status} pausedByReview={livePaused} />
+
         <PlayerBar
           color={topColor}
           name={nameOf(topColor)}
@@ -198,8 +200,6 @@ export default function App() {
           active={isActive(bottomColor)}
         />
 
-        <EngineLine fen={game.fen} engine={engine} status={status} pausedByReview={livePaused} />
-
         <MoveList
           moves={moves}
           marks={marks}
@@ -210,21 +210,16 @@ export default function App() {
 
         {reviewResult && <MoveFeedback result={reviewResult} ply={game.ply} onSeek={game.goTo} />}
 
-        <NavControls
+        <BottomBar
           canPrev={game.canPrev}
           canNext={game.canNext}
-          canUndo={game.canUndo}
-          onFirst={goFirst}
+          reviewPercent={reviewPercent}
+          onOptions={openOptions}
+          onNew={handleReset}
+          onReview={openReview}
           onPrev={goPrev}
           onNext={goNext}
-          onLast={goLast}
-          onFlip={game.flip}
-          onUndo={game.undo}
         />
-
-        <button type="button" className="btn review-btn" onClick={openReview}>
-          {reviewLabel}
-        </button>
       </main>
 
       {modal === 'import' && (
@@ -233,6 +228,15 @@ export default function App() {
           onLoadPgn={game.loadPgn}
           onLoadFen={game.loadFen}
           onImported={showToast}
+        />
+      )}
+      {modal === 'options' && (
+        <OptionsModal
+          canPrev={game.canPrev}
+          canNext={game.canNext}
+          canUndo={game.canUndo}
+          actions={{ flip: game.flip, undo: game.undo, first: goFirst, last: goLast }}
+          onClose={closeModal}
         />
       )}
       {modal === 'review' && (

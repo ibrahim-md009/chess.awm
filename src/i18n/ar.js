@@ -27,6 +27,18 @@ export const ar = {
 
   modal: { close: 'إغلاق' },
 
+  bottomBar: {
+    options: 'خيارات',
+    new: 'جديدة',
+    review: 'مراجعة المباراة',
+    back: 'السابق',
+    forward: 'التالي',
+    scrollBack: 'تمرير قائمة النقلات للخلف',
+    scrollForward: 'تمرير قائمة النقلات للأمام',
+  },
+
+  optionsMenu: { title: 'خيارات' },
+
   appBar: {
     import: 'استيراد PGN',
     importTitle: 'استيراد مباراة',
@@ -50,7 +62,7 @@ export const ar = {
     done: 'تم',
     boardSection: 'اللوحة',
     theme: 'ألوان اللوحة',
-    themes: { ocean: 'محيط', classic: 'كلاسيكي', walnut: 'جوزي', slate: 'رمادي' },
+    themes: { wood: 'خشبي', ocean: 'محيط', classic: 'كلاسيكي', walnut: 'جوزي', slate: 'رمادي' },
     analysisSection: 'التحليل',
     arrow: 'عرض سهم أفضل نقلة',
     arrowHint:

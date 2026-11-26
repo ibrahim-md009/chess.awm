@@ -10,67 +10,64 @@
   padding-bottom: env(safe-area-inset-bottom);
 }
 
-/* ---------- app bar ---------- */
+/* ---------- app bar (icons only, like the reference) ---------- */
 
 .appbar {
+  direction: ltr;
   position: sticky;
   top: 0;
   z-index: 30;
   height: var(--appbar-h);
-  display: flex;
+  display: grid;
+  grid-template-columns: 52px 1fr 52px;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 0 10px;
-  padding-inline: max(10px, env(safe-area-inset-left)) max(10px, env(safe-area-inset-right));
-  background: rgba(13, 16, 23, 0.9);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border-soft);
+  padding-inline: max(6px, env(safe-area-inset-left)) max(6px, env(safe-area-inset-right));
+  background: var(--bg);
 }
 
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-
-.brand-mark {
+.appbar-btn {
   display: grid;
   place-items: center;
-  flex: none;
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, var(--accent), #6c8cff);
-  color: #07121b;
-  font-size: 1.15rem;
-  line-height: 1;
+  width: 48px;
+  height: 48px;
+  background: transparent;
+  border: 0;
+  border-radius: 12px;
+  color: var(--text-2);
+  cursor: pointer;
+}
+
+.appbar-btn:active {
+  background: var(--surface-2);
 }
 
 .brand-title {
-  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 1.15rem;
   font-weight: 800;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.appbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex: none;
+.brand-mark {
+  color: var(--accent);
+  font-size: 1.5rem;
+  line-height: 1;
 }
 
 /* ---------- the screen ----------
-   Full width on phones (the board takes the whole width minus the 8px eval strip).
+   Full width on phones: the board is edge to edge.
    On large screens it is capped so the whole column still fits the window height. */
 
 .screen {
   width: 100%;
   max-width: 640px;
+  min-height: calc(100dvh - var(--appbar-h));
   margin-inline: auto;
   display: flex;
   flex-direction: column;
@@ -84,6 +81,7 @@
 
 .board-row {
   direction: ltr;
+  position: relative;
   display: flex;
   align-items: stretch;
 }
@@ -99,15 +97,4 @@
 
 .board-square .promo-card {
   direction: rtl;
-}
-
-@media (max-width: 359px) {
-  .btn-label {
-    display: none;
-  }
-
-  .appbar .btn-primary {
-    width: 44px;
-    padding: 0;
-  }
 }

@@ -32,7 +32,7 @@ function isPromotionMove(fen, from, to) {
 }
 
 // Drawn only when the user enables "show best-move arrow" in Settings (the app passes `arrow`).
-const ARROW_COLOR = 'rgba(61, 219, 176, 0.9)';
+const ARROW_COLOR = 'rgba(255, 170, 0, 0.85)';
 
 function ChessBoard({ fen, orientation, lastMove, status, onMove, arrow, badge, theme = DEFAULT_THEME }) {
   const [selected, setSelected] = useState(null);
@@ -146,10 +146,6 @@ function ChessBoard({ fen, orientation, lastMove, status, onMove, arrow, badge, 
           customSquareStyles={squareStyles}
           customLightSquareStyle={{ backgroundColor: theme.light }}
           customDarkSquareStyle={{ backgroundColor: theme.dark }}
-          customBoardStyle={{
-            borderRadius: '8px',
-            boxShadow: '0 8px 28px rgba(0,0,0,0.45)',
-          }}
           areArrowsAllowed={false}
           customArrows={arrow ? [[arrow.from, arrow.to, ARROW_COLOR]] : []}
         />

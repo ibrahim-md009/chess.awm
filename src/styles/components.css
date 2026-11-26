@@ -73,9 +73,10 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  min-height: 36px;
-  padding: 4px 12px;
+  min-height: 34px;
+  padding: 2px 12px;
   color: var(--text-2);
+  font-size: 0.95rem;
 }
 
 .player-bar.is-active {
@@ -121,11 +122,15 @@
 /* ---------- evaluation bar: thin strip on the board's left edge ---------- */
 
 .eval-bar {
-  position: relative;
-  flex: none;
+  /* thin strip drawn over the board's left edge so the board stays full width */
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  z-index: 2;
   width: var(--eval-w);
   overflow: hidden;
-  background: #090c12;
+  background: rgba(0, 0, 0, 0.55);
+  pointer-events: none;
   transition: opacity 0.3s;
 }
 
@@ -153,9 +158,7 @@
   flex-wrap: wrap;
   gap: 4px 12px;
   min-height: 40px;
-  padding: 4px 12px;
-  background: var(--surface);
-  border-block: 1px solid var(--border-soft);
+  padding: 2px 12px;
 }
 
 .engine-score {
@@ -210,26 +213,48 @@
   margin-inline-start: auto;
 }
 
-/* ---------- move strip (one scrolling row) ---------- */
+/* ---------- move strip: chevron, scrolling moves, chevron ---------- */
 
 .moves {
-  background: var(--bg-2);
-  border-bottom: 1px solid var(--border-soft);
+  direction: ltr;
+  display: flex;
+  align-items: center;
+  margin-top: auto;
+  padding: 10px 4px 6px;
+}
+
+.moves-arrow {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  background: transparent;
+  border: 0;
+  color: var(--text-2);
+  cursor: pointer;
+}
+
+.moves-arrow:active {
+  color: var(--text);
 }
 
 .moves-empty {
+  flex: 1;
   margin: 0;
-  padding: 12px;
-  font-size: 0.85rem;
+  text-align: center;
+  font-size: 0.9rem;
 }
 
 .moves-strip {
   position: relative;
+  flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 2px;
   margin: 0;
-  padding: 4px 8px;
+  padding: 0;
   list-style: none;
   overflow-x: auto;
   overscroll-behavior-x: contain;
@@ -245,22 +270,21 @@
   flex: none;
   display: flex;
   align-items: center;
+  padding-inline-end: 6px;
 }
 
 .move-num {
-  padding-inline: 6px 2px;
-  color: var(--muted);
-  font-family: var(--mono);
-  font-size: 0.8rem;
+  padding-inline: 8px 6px;
+  color: var(--text-2);
+  font-size: 1.05rem;
 }
 
 .move-cell {
   display: block;
-  min-height: 36px;
   padding: 6px 8px;
   border-radius: 6px;
-  font-family: var(--mono);
-  font-size: 0.95rem;
+  font-size: 1.15rem;
+  font-weight: 700;
   white-space: nowrap;
 }
 
@@ -268,18 +292,12 @@
   position: relative;
   background: transparent;
   border: 0;
-  color: inherit;
+  color: var(--text);
   cursor: pointer;
 }
 
-.move-btn:hover {
-  background: var(--surface-2);
-}
-
 .move-btn.is-active {
-  background: var(--accent);
-  color: var(--accent-ink);
-  font-weight: 800;
+  background: var(--surface-3);
 }
 
 .move-cell-empty {
@@ -307,9 +325,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 12px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border-soft);
+  padding: 4px 12px 6px;
   font-size: 0.85rem;
 }
 
@@ -349,58 +365,114 @@
   font-size: 0.78rem;
 }
 
-/* ---------- navigation row ---------- */
+/* ---------- bottom bar (Options, New, review, Back, Forward) ---------- */
 
-.navbar {
-  direction: ltr; /* first / previous on the left, next / last on the right, like the board */
-  display: flex;
-  gap: 6px;
-  padding: 10px 8px 6px;
+.bottombar {
+  direction: ltr;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.25fr 1fr 1fr;
+  align-items: end;
+  padding: 6px 4px calc(8px + env(safe-area-inset-bottom));
+  background: var(--bg);
 }
 
-.nav-btn {
-  flex: 1;
-  display: grid;
-  place-items: center;
-  min-height: 52px;
-  background: var(--surface-2);
+.bar-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 62px;
+  background: transparent;
   border: 0;
-  border-radius: var(--radius);
-  color: var(--text);
+  color: var(--text-2);
   cursor: pointer;
   touch-action: manipulation;
   user-select: none;
   -webkit-user-select: none;
-  -webkit-tap-highlight-color: transparent;
 }
 
-.nav-btn.nav-main {
-  flex: 1.5;
-  background: var(--surface-3);
+.bar-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.2;
 }
 
-.nav-btn.nav-tool {
-  color: var(--text-2);
+.bar-btn:active:not(:disabled) {
+  color: var(--text);
 }
 
-.nav-btn:active:not(:disabled) {
-  background: var(--accent-soft);
-  color: var(--accent);
-}
-
-.nav-btn:disabled {
+.bar-btn:disabled {
   opacity: 0.35;
   cursor: not-allowed;
 }
 
-.nav-btn:focus-visible {
+.review-fab {
+  justify-self: center;
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  margin-bottom: 4px;
+  background: var(--accent);
+  border: 0;
+  border-radius: 14px;
+  box-shadow: 0 4px 0 #45753c;
+  cursor: pointer;
+  transition: transform 0.08s, box-shadow 0.08s;
+}
+
+.review-fab:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #45753c;
+}
+
+.fab-percent {
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+
+.bar-btn:focus-visible,
+.review-fab:focus-visible,
+.moves-arrow:focus-visible,
+.appbar-btn:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
-.review-btn {
-  width: calc(100% - 16px);
-  margin: 4px 8px 12px;
+/* ---------- options sheet ---------- */
+
+.option-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.option-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 54px;
+  padding: 8px 6px;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--border-soft);
+  color: var(--text);
+  font-size: 1.05rem;
+  font-weight: 600;
+  text-align: start;
+  cursor: pointer;
+}
+
+.option-item:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.option-item:active:not(:disabled) {
+  background: var(--surface-2);
 }
 
 /* ---------- segmented control, slider, select, textarea ---------- */
@@ -902,7 +974,7 @@
 
 @media (min-width: 640px) {
   .theme-grid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
   }
 
   .theme-option {
