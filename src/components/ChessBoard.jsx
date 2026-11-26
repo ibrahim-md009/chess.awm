@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Chessboard } from 'react-chessboard';
 import { Chess } from 'chess.js';
 import PromotionDialog from './PromotionDialog.jsx';
+import SquareBadge from './SquareBadge.jsx';
 
 const LIGHT = '#ebecd0';
 const DARK = '#739552';
@@ -33,7 +34,7 @@ function isPromotionMove(fen, from, to) {
 
 const ARROW_COLOR = 'rgba(129, 182, 76, 0.9)';
 
-export default function ChessBoard({ fen, orientation, lastMove, status, onMove, arrow }) {
+export default function ChessBoard({ fen, orientation, lastMove, status, onMove, arrow, badge }) {
   const [selected, setSelected] = useState(null);
   const [pendingPromotion, setPendingPromotion] = useState(null); // { from, to }
 
@@ -153,6 +154,13 @@ export default function ChessBoard({ fen, orientation, lastMove, status, onMove,
           areArrowsAllowed={false}
           customArrows={arrow ? [[arrow.from, arrow.to, ARROW_COLOR]] : []}
         />
+        {badge && (
+          <SquareBadge
+            square={badge.square}
+            orientation={orientation}
+            classification={badge.classification}
+          />
+        )}
         {pendingPromotion && (
           <PromotionDialog
             color={sideToMove}

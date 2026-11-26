@@ -5,8 +5,17 @@ import { ar } from '../i18n/ar.js';
 const fmtAccuracy = (v) => (v === null || v === undefined ? '—' : `${v.toFixed(1)}%`);
 const fmtCpl = (v) => (v === null || v === undefined ? '—' : Math.round(v));
 
+/** Estimated time left, from the average time per position so far. */
+function etaText(startedAt, done, total) {
+  if (!startedAt || done < 2) return ar.review.etaCalculating;
+  const perPosition = (Date.now() - startedAt) / done;
+  const seconds = Math.max(1, Math.round((perPosition * (total - done)) / 1000));
+  if (seconds < 60) return ar.review.etaSeconds(seconds);
+  return ar.review.etaMinutes(Math.floor(seconds / 60), seconds % 60);
+}
+
 export default function ReviewPanel({ review, headers, hasMoves, liveWasPaused }) {
-  const { status, progress, result, error, depth, setDepth, start } = review;
+  const { status, progress, result, error, startedAt, depth, setDepth, start, cancel } = review;
   const running = status === 'running';
   const percent = progress.total ? Math.round((progress.done / progress.total) * 100) : 0;
 
@@ -36,24 +45,34 @@ export default function ReviewPanel({ review, headers, hasMoves, liveWasPaused }
         </select>
       </div>
 
-      <button
-        type="button"
-        className="btn btn-primary review-start"
-        onClick={start}
-        disabled={!hasMoves || running}
-      >
-        {running ? ar.review.running : status === 'done' ? ar.review.rerun : ar.review.start}
-      </button>
+      {running ? (
+        <button type="button" className="btn review-start" onClick={cancel}>
+          {ar.review.cancel}
+        </button>
+      ) : (
+        <button
+          type="button"
+          className="btn btn-primary review-start"
+          onClick={start}
+          disabled={!hasMoves}
+        >
+          {status === 'done' ? ar.review.rerun : ar.review.start}
+        </button>
+      )}
 
       {!hasMoves && <p className="muted engine-status">{ar.review.noMoves}</p>}
       {hasMoves && status === 'idle' && <p className="muted engine-status">{ar.review.note}</p>}
+      {status === 'cancelled' && <p className="muted engine-status">{ar.review.cancelled}</p>}
 
       {running && (
-        <div className="review-progress">
+        <div className="review-progress" role="status" aria-live="polite">
           <progress className="progress" max={100} value={percent} aria-label={ar.review.running} />
-          <p className="muted engine-status">
-            {ar.review.progress(progress.done, progress.total)} ({percent}%)
-          </p>
+          <div className="engine-meta muted">
+            <span>
+              {ar.review.progress(progress.done, progress.total)} ({percent}%)
+            </span>
+            <span>{etaText(startedAt, progress.done, progress.total)}</span>
+          </div>
           {liveWasPaused && <p className="muted engine-status">{ar.review.livePaused}</p>}
         </div>
       )}

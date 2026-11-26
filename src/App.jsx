@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useChessGame } from './hooks/useChessGame.js';
 import { useStockfish } from './hooks/useStockfish.js';
 import { useGameReview } from './hooks/useGameReview.js';
 import AnalysisPanel from './components/AnalysisPanel.jsx';
 import ReviewPanel from './components/ReviewPanel.jsx';
+import ReviewNavigator from './components/ReviewNavigator.jsx';
 import ChessBoard from './components/ChessBoard.jsx';
 import GameStatus from './components/GameStatus.jsx';
 import NavControls from './components/NavControls.jsx';
@@ -36,6 +37,26 @@ export default function App() {
     review.start();
   };
   const { goPrev, goNext, goFirst, goLast, reset, moves } = game;
+
+  // The review result only counts while it still matches the move list on screen.
+  const reviewResult =
+    review.status === 'done' && review.result && review.result.moves.length === moves.length
+      ? review.result
+      : null;
+
+  const marks = useMemo(
+    () => (reviewResult ? reviewResult.moves.map((m) => m.classification) : null),
+    [reviewResult],
+  );
+
+  // Classification badge on the destination square of the move being viewed.
+  const badge =
+    reviewResult && game.ply > 0 && game.lastMove
+      ? {
+          square: game.lastMove.to,
+          classification: reviewResult.moves[game.ply - 1].classification,
+        }
+      : null;
 
   // Keyboard navigation. The page is RTL, so the right arrow goes back in the
   // game (toward the right-hand start of the reading order) and left goes forward.
@@ -95,6 +116,7 @@ export default function App() {
             status={game.status}
             onMove={game.makeMove}
             arrow={engine.arrow}
+            badge={badge}
           />
           <NavControls
             canPrev={game.canPrev}
@@ -108,6 +130,12 @@ export default function App() {
             onUndo={game.undo}
             onReset={handleReset}
           />
+          <ReviewNavigator
+            result={reviewResult}
+            ply={game.ply}
+            startFullmove={game.startFullmove}
+            onSeek={game.goTo}
+          />
         </section>
 
         <aside className="side-column">
@@ -120,6 +148,7 @@ export default function App() {
           <AnalysisPanel fen={game.fen} engine={engine} />
           <MoveList
             moves={game.moves}
+            marks={marks}
             ply={game.ply}
             startFullmove={game.startFullmove}
             onSelect={game.goTo}

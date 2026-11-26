@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { buildMoveRows } from '../utils/chess.js';
+import { CLASS_META } from '../utils/classification.js';
 import { ar } from '../i18n/ar.js';
 
 // Move text is chess notation (Latin letters); keep it LTR inside the RTL page.
-function MoveCell({ index, move, active, onSelect, cellRef }) {
+function MoveCell({ index, move, mark, active, onSelect, cellRef }) {
   if (!move) {
     return <span className="move-cell move-cell-empty">{ar.moves.placeholderCell}</span>;
   }
+  const meta = mark ? CLASS_META[mark] : null;
   return (
     <button
       type="button"
@@ -14,14 +16,29 @@ function MoveCell({ index, move, active, onSelect, cellRef }) {
       className={`move-cell move-btn${active ? ' is-active' : ''}`}
       onClick={() => onSelect(index + 1)}
       aria-current={active ? 'true' : undefined}
+      aria-label={meta ? `${move.san} — ${ar.review.classifications[mark]}` : undefined}
       dir="ltr"
     >
       {move.san}
+      {meta && (
+        <span
+          className="move-mark"
+          style={{ background: meta.color }}
+          title={ar.review.classifications[mark]}
+          aria-hidden="true"
+        >
+          {meta.symbol}
+        </span>
+      )}
     </button>
   );
 }
 
-export default function MoveList({ moves, ply, startFullmove, onSelect }) {
+/**
+ * @param {object[]|null} marks  optional classification per move (same indexes as `moves`),
+ *                               present only while a review result matches the game
+ */
+export default function MoveList({ moves, marks, ply, startFullmove, onSelect }) {
   const rows = useMemo(() => buildMoveRows(moves, startFullmove), [moves, startFullmove]);
   const activeRef = useRef(null);
   const containerRef = useRef(null);
@@ -42,6 +59,8 @@ export default function MoveList({ moves, ply, startFullmove, onSelect }) {
     }
   }, [ply, moves.length]);
 
+  const markAt = (i) => (marks && i !== null && marks[i] ? marks[i] : null);
+
   return (
     <section className="panel moves-panel" aria-label={ar.moves.title}>
       <h2 className="panel-title">{ar.moves.title}</h2>
@@ -56,6 +75,7 @@ export default function MoveList({ moves, ply, startFullmove, onSelect }) {
                 <MoveCell
                   index={row.w}
                   move={row.w !== null ? moves[row.w] : null}
+                  mark={markAt(row.w)}
                   active={row.w !== null && row.w + 1 === ply}
                   onSelect={onSelect}
                   cellRef={activeRef}
@@ -63,6 +83,7 @@ export default function MoveList({ moves, ply, startFullmove, onSelect }) {
                 <MoveCell
                   index={row.b}
                   move={row.b !== null ? moves[row.b] : null}
+                  mark={markAt(row.b)}
                   active={row.b !== null && row.b + 1 === ply}
                   onSelect={onSelect}
                   cellRef={activeRef}

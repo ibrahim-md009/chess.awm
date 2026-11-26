@@ -1,7 +1,7 @@
 # مراجعة مباريات الشطرنج — Chess Game Review
 
 Arabic RTL dark-themed chess app built with React + Vite.
-**Current status: Phase 3 of 5** (game review engine).
+**Current status: Phase 4 of 5** (game review interface).
 
 ## Requirements
 
@@ -92,10 +92,25 @@ Press «بدء مراجعة المباراة» to analyse the whole game (the cu
 
 These are our own approximations of the Lichess / Chess.com ideas, computed at a fixed
 depth with a small WASM engine, so numbers will not match those sites exactly. There is no
-opening-book detection. The full per-move data (best move, cp loss, win%) is already
-produced for Phase 4 (graph, board icons, move-list marks); this phase only shows the
-summary. A cancel button and richer progress display arrive in Phase 4; for now changing
-the game (a move, undo, import, reset) aborts a running review.
+opening-book detection.
+
+### Phase 4 (new): game review interface
+
+- **Review progress and cancellation**: a progress bar with position count, percentage and
+  an estimated time remaining; a «إلغاء المراجعة» button stops the run and terminates its
+  engine. Changing the game (a move, undo, import, reset) still aborts a running review silently
+  and discards a finished one, because it would no longer describe the game on screen.
+- **Interactive evaluation graph** (under the board, once a review is done): White's winning
+  chances over the whole game. Hover shows a tooltip (move, class, score); click, tap or drag
+  jumps to the move under the pointer. The current move is marked, and brilliant / great /
+  mistake / blunder moves get coloured dots. The time axis follows the RTL interface: the
+  starting position is on the right and the game progresses to the left, like the arrow buttons.
+- **Classification icons on the board**: a coloured badge (`!!`, `!`, `★`, `✓`, `•`, `?!`, `?`, `??`)
+  on the destination square of the move being viewed. It follows board flipping.
+- **Improved move list**: each move carries its classification mark, with an accessible label.
+- **Review navigation**: a feedback card for the current move (class, best move if different,
+  centipawn loss, evaluation) and «الخطأ السابق / التالي» buttons that jump between mistakes
+  and blunders.
 
 ## Why the lite single-threaded engine
 
@@ -118,7 +133,8 @@ src/
   main.jsx                entry
   App.jsx                 layout and keyboard shortcuts
   components/             ChessBoard, PromotionDialog, MoveList, NavControls,
-                          ImportPanel, GameStatus, AnalysisPanel, ReviewPanel
+                          ImportPanel, GameStatus, AnalysisPanel, ReviewPanel,
+                          ReviewNavigator (EvalGraph + MoveFeedback), SquareBadge
   engine/stockfishEngine.js   Web Worker + UCI wrapper, info-line parser
   hooks/useChessGame.js   game state (reducer)
   engine/gameReview.js    full-game position evaluation (own engine, abortable)
@@ -127,6 +143,7 @@ src/
   utils/chess.js          FEN/PGN parsing, move records, status helpers
   utils/analysis.js       score formatting, PV to SAN
   utils/review.js         win%, centipawn loss, classification, accuracy, stats
+  utils/classification.js symbols / colours per class, mistake navigation helper
   i18n/ar.js              Arabic strings
   styles/                 base.css, components.css
 ```
@@ -135,8 +152,8 @@ src/
 
 1. Foundation and chessboard ✔
 2. Stockfish integration ✔
-3. Game review engine ✔ (this release)
-4. Game review interface
+3. Game review engine ✔
+4. Game review interface ✔ (this release)
 5. Final integration and polish
 
 ## License note
@@ -149,4 +166,4 @@ If you distribute this app, make sure you comply with that license.
 This release was written and reviewed by reading the code only. It has not been
 installed, built, or run by its author, so please report anything that fails
 after `npm install` / `npm run dev`. In particular, the engine-loading path
-(`public/engine`, the Web Worker and the UCI exchange) and the review scoring (thresholds, Brilliant / Great heuristics, accuracy) have not been exercised.
+(`public/engine`, the Web Worker and the UCI exchange) the review scoring (thresholds, Brilliant / Great heuristics, accuracy) and the Phase 4 interface (graph pointer handling, board badge placement, cancellation) have not been exercised.

@@ -5,16 +5,23 @@ import { analyzeGame } from '../utils/review.js';
 export const REVIEW_DEPTHS = [10, 14, 18];
 export const DEFAULT_REVIEW_DEPTH = 14;
 
-const IDLE = { status: 'idle', progress: { done: 0, total: 0 }, result: null, error: null };
+const IDLE = {
+  status: 'idle',
+  progress: { done: 0, total: 0 },
+  result: null,
+  error: null,
+  startedAt: null,
+};
 
 /**
  * Full-game review of the CURRENT move list.
  *
- * status: 'idle' | 'running' | 'done' | 'error'
+ * status: 'idle' | 'running' | 'done' | 'cancelled' | 'error'
  *
- * If the game changes (new move, undo, import, reset) while a review is running
- * it is aborted, and a finished result is discarded, because it would no longer
- * describe the game on screen.
+ * - cancel() is the user's cancel button: it aborts the run and shows "cancelled".
+ * - If the game itself changes (new move, undo, import, reset) a running review is
+ *   aborted silently and any finished result is discarded, because it would no
+ *   longer describe the game on screen.
  */
 export function useGameReview(startFen, moves) {
   const [state, setState] = useState(IDLE);
@@ -26,7 +33,7 @@ export function useGameReview(startFen, moves) {
     [startFen, moves],
   );
 
-  const cancel = useCallback(() => {
+  const abortRun = useCallback(() => {
     if (controllerRef.current) {
       controllerRef.current.abort();
       controllerRef.current = null;
@@ -35,12 +42,18 @@ export function useGameReview(startFen, moves) {
 
   // Game changed: abort anything running and drop stale results.
   useEffect(() => {
-    cancel();
+    abortRun();
     setState(IDLE);
-  }, [gameKey, cancel]);
+  }, [gameKey, abortRun]);
 
   // Abort on unmount.
-  useEffect(() => cancel, [cancel]);
+  useEffect(() => abortRun, [abortRun]);
+
+  const cancel = useCallback(() => {
+    if (!controllerRef.current) return;
+    abortRun();
+    setState({ ...IDLE, status: 'cancelled' });
+  }, [abortRun]);
 
   const start = useCallback(async () => {
     if (moves.length === 0 || controllerRef.current) return;
@@ -49,7 +62,13 @@ export function useGameReview(startFen, moves) {
     controllerRef.current = controller;
     const fens = [startFen, ...moves.map((m) => m.fen)];
 
-    setState({ status: 'running', progress: { done: 0, total: fens.length }, result: null, error: null });
+    setState({
+      status: 'running',
+      progress: { done: 0, total: fens.length },
+      result: null,
+      error: null,
+      startedAt: Date.now(),
+    });
 
     try {
       const positions = await evaluatePositions({
@@ -64,7 +83,13 @@ export function useGameReview(startFen, moves) {
       if (controller.signal.aborted) return;
 
       const result = analyzeGame({ startFen, moves, positions });
-      setState({ status: 'done', progress: { done: fens.length, total: fens.length }, result, error: null });
+      setState({
+        status: 'done',
+        progress: { done: fens.length, total: fens.length },
+        result,
+        error: null,
+        startedAt: null,
+      });
     } catch (err) {
       if (controller.signal.aborted || err.name === 'AbortError') return;
       setState({ ...IDLE, status: 'error', error: err.code || 'unknown' });
@@ -78,9 +103,10 @@ export function useGameReview(startFen, moves) {
     progress: state.progress,
     result: state.result,
     error: state.error,
+    startedAt: state.startedAt,
     depth,
     setDepth,
     start,
-    cancel, // used internally for now; a cancel button arrives with the Phase 4 interface
+    cancel,
   };
 }
