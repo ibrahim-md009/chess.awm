@@ -1,5 +1,6 @@
 import Modal from './Modal.jsx';
 import { BOARD_THEMES } from '../hooks/useSettings.js';
+import { MAX_DEPTH, MIN_DEPTH } from '../hooks/useStockfish.js';
 import { ar } from '../i18n/ar.js';
 
 function Switch({ id, checked, onChange, label, hint }) {
@@ -73,11 +74,55 @@ export default function SettingsModal({ settings, onChange, onClose }) {
           {ar.settings.analysisSection}
         </h3>
         <Switch
+          id="set-analysis"
+          checked={settings.analysis}
+          onChange={(v) => onChange({ analysis: v })}
+          label={ar.settings.analysis}
+          hint={ar.settings.analysisHint}
+        />
+        <div className="setting-slider">
+          <div className="setting-slider-head">
+            <label className="setting-label" htmlFor="set-depth">
+              {ar.settings.depth}
+            </label>
+            <span className="setting-value" dir="ltr">
+              {ar.settings.depthValue(settings.engineDepth)}
+            </span>
+          </div>
+          <input
+            id="set-depth"
+            type="range"
+            className="range"
+            min={MIN_DEPTH}
+            max={MAX_DEPTH}
+            step="1"
+            value={settings.engineDepth}
+            onChange={(e) => onChange({ engineDepth: Number(e.target.value) })}
+            aria-describedby="set-depth-hint"
+          />
+          <p className="muted setting-hint" id="set-depth-hint">
+            {ar.settings.depthHint}
+          </p>
+        </div>
+        <Switch
           id="set-arrow"
           checked={settings.showBestArrow}
           onChange={(v) => onChange({ showBestArrow: v })}
           label={ar.settings.arrow}
           hint={ar.settings.arrowHint}
+        />
+      </section>
+
+      <section className="settings-section" aria-labelledby="settings-sound">
+        <h3 className="settings-heading" id="settings-sound">
+          {ar.settings.soundSection}
+        </h3>
+        <Switch
+          id="set-sound"
+          checked={settings.sound}
+          onChange={(v) => onChange({ sound: v })}
+          label={ar.settings.sound}
+          hint={ar.settings.soundHint}
         />
       </section>
 

@@ -1,0 +1,7 @@
+move.mp3, capture.mp3, check.mp3
+
+Copied from the "sfx" sound set of the Lichess project
+(https://github.com/lichess-org/lila, public/sound/sfx/Move.mp3, Capture.mp3, Check.mp3),
+by Enigmahack. Licensed AGPL-3.0-or-later (see lila's COPYING.md).
+They are not Chess.com's sounds. If you distribute this app, comply with that license
+or replace these three files with sounds you have the right to use.

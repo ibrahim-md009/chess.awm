@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, memo } from 'react';
 import { buildMoveRows } from '../utils/chess.js';
-import { Icon } from './icons.jsx';
-import { CLASS_META } from '../utils/classification.js';
+import StepButton from './StepButton.jsx';
+import ClassIcon from './ClassIcon.jsx';
 import { ar } from '../i18n/ar.js';
 
 // Move text is chess notation (Latin letters); keep it LTR inside the RTL page.
@@ -9,7 +9,6 @@ function MoveCell({ index, move, mark, active, onSelect, cellRef }) {
   if (!move) {
     return <span className="move-cell move-cell-empty">{ar.moves.placeholderCell}</span>;
   }
-  const meta = mark ? CLASS_META[mark] : null;
   return (
     <button
       type="button"
@@ -17,20 +16,11 @@ function MoveCell({ index, move, mark, active, onSelect, cellRef }) {
       className={`move-cell move-btn${active ? ' is-active' : ''}`}
       onClick={() => onSelect(index + 1)}
       aria-current={active ? 'true' : undefined}
-      aria-label={meta ? `${move.san} — ${ar.review.classifications[mark]}` : undefined}
+      aria-label={mark ? `${move.san} — ${ar.review.classifications[mark]}` : undefined}
       dir="ltr"
     >
       {move.san}
-      {meta && (
-        <span
-          className="move-mark"
-          style={{ background: meta.color }}
-          title={ar.review.classifications[mark]}
-          aria-hidden="true"
-        >
-          {meta.symbol}
-        </span>
-      )}
+      {mark && <ClassIcon classification={mark} size={18} className="move-mark" />}
     </button>
   );
 }
@@ -39,7 +29,7 @@ function MoveCell({ index, move, mark, active, onSelect, cellRef }) {
  * @param {object[]|null} marks  optional classification per move (same indexes as `moves`),
  *                               present only while a review result matches the game
  */
-function MoveList({ moves, marks, ply, startFullmove, onSelect }) {
+function MoveList({ moves, marks, ply, startFullmove, onSelect, canPrev, canNext, onPrev, onNext }) {
   const rows = useMemo(() => buildMoveRows(moves, startFullmove), [moves, startFullmove]);
   const activeRef = useRef(null);
   const containerRef = useRef(null);
@@ -56,23 +46,11 @@ function MoveList({ moves, marks, ply, startFullmove, onSelect }) {
     box.scrollLeft = el.offsetLeft - (box.clientWidth - el.offsetWidth) / 2;
   }, [ply, moves.length]);
 
-  const scrollBy = (dir) => {
-    const box = containerRef.current;
-    if (box) box.scrollBy({ left: dir * box.clientWidth * 0.7, behavior: 'smooth' });
-  };
-
   const markAt = (i) => (marks && i !== null && marks[i] ? marks[i] : null);
 
   return (
     <div className="moves" role="region" aria-label={ar.moves.title}>
-      <button
-        type="button"
-        className="moves-arrow"
-        onClick={() => scrollBy(-1)}
-        aria-label={ar.bottomBar.scrollBack}
-      >
-        <Icon name="prev" size={26} />
-      </button>
+      <StepButton icon="prev" label={ar.bottomBar.back} onClick={onPrev} disabled={!canPrev} />
       {rows.length === 0 ? (
         <p className="muted moves-empty">{ar.moves.empty}</p>
       ) : (
@@ -100,14 +78,7 @@ function MoveList({ moves, marks, ply, startFullmove, onSelect }) {
           ))}
         </ol>
       )}
-      <button
-        type="button"
-        className="moves-arrow"
-        onClick={() => scrollBy(1)}
-        aria-label={ar.bottomBar.scrollForward}
-      >
-        <Icon name="next" size={26} />
-      </button>
+      <StepButton icon="next" label={ar.bottomBar.forward} onClick={onNext} disabled={!canNext} />
     </div>
   );
 }

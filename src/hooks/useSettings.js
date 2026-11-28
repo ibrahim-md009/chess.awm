@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { DEFAULT_DEPTH, MAX_DEPTH, MIN_DEPTH } from './useStockfish.js';
 
 const STORAGE_KEY = 'chess-review-settings-v1';
 
@@ -15,10 +16,16 @@ export const BOARD_THEMES = {
  * showBestArrow  – draw the engine's best move on the board (OFF by default).
  *                  Only a display option: analysis always keeps running.
  * boardTheme     – key of BOARD_THEMES.
+ * analysis       – live analysis switched on (the engine runs continuously).
+ * engineDepth    – search depth of the live analysis.
+ * sound          – play move sounds.
  */
 export const DEFAULT_SETTINGS = {
   showBestArrow: false,
   boardTheme: 'wood',
+  analysis: true,
+  engineDepth: DEFAULT_DEPTH,
+  sound: true,
 };
 
 /** Accept only known keys with valid values, so a corrupted store can't break the UI. */
@@ -30,6 +37,12 @@ function sanitize(raw) {
     boardTheme: Object.prototype.hasOwnProperty.call(BOARD_THEMES, s.boardTheme)
       ? s.boardTheme
       : DEFAULT_SETTINGS.boardTheme,
+    analysis: typeof s.analysis === 'boolean' ? s.analysis : DEFAULT_SETTINGS.analysis,
+    engineDepth:
+      Number.isInteger(s.engineDepth) && s.engineDepth >= MIN_DEPTH && s.engineDepth <= MAX_DEPTH
+        ? s.engineDepth
+        : DEFAULT_SETTINGS.engineDepth,
+    sound: typeof s.sound === 'boolean' ? s.sound : DEFAULT_SETTINGS.sound,
   };
 }
 

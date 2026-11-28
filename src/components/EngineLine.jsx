@@ -1,5 +1,5 @@
 import { memo, useMemo } from 'react';
-import { formatPv, formatScore } from '../utils/analysis.js';
+import { formatPv } from '../utils/analysis.js';
 import { ar } from '../i18n/ar.js';
 
 /** One-line description of a finished / special game state, or null. */
@@ -19,7 +19,7 @@ function statusText(status) {
  * paused during a review, and the game-over / check text.
  */
 function EngineLine({ fen, engine, status, pausedByReview }) {
-  const { phase, error, enabled, lines, evalLine, evalStale, searching, setRunning } = engine;
+  const { phase, error, enabled, lines, evalLine, searching, setRunning } = engine;
 
   const top = lines[0] || null;
   const bestSan = useMemo(
@@ -44,14 +44,13 @@ function EngineLine({ fen, engine, status, pausedByReview }) {
     );
   } else if (pausedByReview) {
     body = <span className="engine-msg">{ar.engine.pausedByReview}</span>;
-  } else if (phase !== 'ready' || !enabled) {
+  } else if (!enabled) {
+    body = <span className="engine-msg">{ar.engine.paused}</span>;
+  } else if (phase !== 'ready') {
     body = <span className="engine-msg">{ar.engine.loading}</span>;
   } else if (!over && evalLine) {
     body = (
       <>
-        <span className={`engine-score${evalStale ? ' is-stale' : ''}`} dir="ltr">
-          {formatScore(evalLine)}
-        </span>
         <span className="engine-meta-line">
           <span>Stockfish</span>
           <span>

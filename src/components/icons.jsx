@@ -7,6 +7,8 @@ export const ICONS = {
   next: 'M8 3.5 16.5 12 8 20.5l-2-2 6.5-6.5L6 5.5z',
   menu: 'M4 5.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zM8.5 6.25h12v1.5h-12zM4 10.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zM8.5 11.25h12v1.5h-12zM4 15.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zM8.5 16.25h12v1.5h-12z',
   plus: 'M10.5 4h3v6.5H20v3h-6.5V20h-3v-6.5H4v-3h6.5z',
+  review:
+    'M10.5 3a7.5 7.5 0 1 0 0 15 7.5 7.5 0 0 0 0-15zm0 2.2a5.3 5.3 0 1 1 0 10.6 5.3 5.3 0 0 1 0-10.6zM10.5 7l.85 2.33 2.48.09-1.95 1.53.68 2.38-2.06-1.38-2.06 1.38.68-2.38-1.95-1.53 2.48-.09zM15.6 17.2l1.6-1.6 4.6 4.6a1.13 1.13 0 0 1-1.6 1.6z',
   last: 'M6 18l8.5-6L6 6zm10-12v12h2V6z',
   flip: 'M7 4l-4 4h3v7h2V8h3zm10 16l4-4h-3V9h-2v7h-3z',
   undo: 'M12.5 8c-2.65 0-5.05 1-6.9 2.6L2 7v9h9l-3.62-3.62A7.96 7.96 0 0 1 12.5 10c3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 10.75 17.19 8 12.5 8z',
@@ -20,10 +22,12 @@ export const ICONS = {
     'M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z',
 };
 
+const EVEN_ODD = new Set(['review']);
+
 export function Icon({ name, size = 22 }) {
   return (
     <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true" focusable="false">
-      <path d={ICONS[name]} fill="currentColor" />
+      <path d={ICONS[name]} fill="currentColor" fillRule={EVEN_ODD.has(name) ? 'evenodd' : 'nonzero'} />
     </svg>
   );
 }

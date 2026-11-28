@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { REVIEW_DEPTHS } from '../hooks/useGameReview.js';
 import { CLASSIFICATIONS } from '../utils/review.js';
+import ClassIcon from './ClassIcon.jsx';
 import { ar } from '../i18n/ar.js';
 
 const fmtAccuracy = (v) => (v === null || v === undefined ? '—' : `${v.toFixed(1)}%`);
@@ -120,7 +121,7 @@ function ReviewPanel({ review, onStart, headers, hasMoves, liveWasPaused }) {
               {CLASSIFICATIONS.map((c) => (
                 <tr key={c}>
                   <th scope="row" className="class-name">
-                    <span className={`class-dot class-${c}`} aria-hidden="true" />
+                    <ClassIcon classification={c} size={20} />
                     {ar.review.classifications[c]}
                   </th>
                   <td>{result.summary.w.counts[c]}</td>

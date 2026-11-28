@@ -1,5 +1,4 @@
-import { CLASS_META } from '../utils/classification.js';
-import { ar } from '../i18n/ar.js';
+import ClassIcon from './ClassIcon.jsx';
 
 /**
  * Classification badge drawn on the top-right corner of a board square.
@@ -7,8 +6,7 @@ import { ar } from '../i18n/ar.js';
  * so it keeps working when the board is flipped or resized.
  */
 export default function SquareBadge({ square, orientation, classification }) {
-  const meta = CLASS_META[classification];
-  if (!meta || !square) return null;
+  if (!classification || !square) return null;
 
   const file = 'abcdefgh'.indexOf(square[0]);
   const rank = Number(square[1]);
@@ -24,13 +22,7 @@ export default function SquareBadge({ square, orientation, classification }) {
       style={{ left: `${col * 12.5}%`, top: `${row * 12.5}%` }}
       aria-hidden="true"
     >
-      <span
-        className="square-badge"
-        style={{ background: meta.color }}
-        title={ar.review.classifications[classification]}
-      >
-        {meta.symbol}
-      </span>
+      <ClassIcon classification={classification} size={64} className="square-badge" />
     </div>
   );
 }

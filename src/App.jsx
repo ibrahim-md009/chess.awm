@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useChessGame } from './hooks/useChessGame.js';
 import { useStockfish } from './hooks/useStockfish.js';
+import { soundKind, useMoveSound } from './hooks/useMoveSound.js';
 import { useGameReview } from './hooks/useGameReview.js';
 import { BOARD_THEMES, useSettings } from './hooks/useSettings.js';
 import AppBar from './components/AppBar.jsx';
@@ -32,17 +33,32 @@ export default function App() {
   // Live analysis runs continuously and follows the board. It is skipped only when the
   // side to move has no legal moves. (The best-move arrow setting never affects it.)
   const noLegalMoves = game.status.checkmate || game.status.stalemate;
-  const engine = useStockfish(game.fen, noLegalMoves);
+  const engine = useStockfish(game.fen, noLegalMoves, { autoStart: settings.analysis });
   const review = useGameReview(game.startFen, moves);
 
   const [modal, setModal] = useState(null); // null | 'import' | 'settings' | 'review' | 'options'
   const [toast, setToast] = useState(null);
   const [livePaused, setLivePaused] = useState(false);
+  const livePausedRef = useRef(false);
+  livePausedRef.current = livePaused;
   const toastTimer = useRef(null);
 
   /* ---------------- live analysis <-> review ---------------- */
 
-  const { enabled: liveEnabled, setRunning: setLiveRunning } = engine;
+  const { enabled: liveEnabled, setRunning: setLiveRunning, setDepth: setLiveDepth } = engine;
+
+  // Settings -> live engine: depth, and the analysis switch (only on change; the initial
+  // value was given to the engine as autoStart).
+  useEffect(() => {
+    setLiveDepth(settings.engineDepth);
+  }, [settings.engineDepth, setLiveDepth]);
+
+  const analysisSetting = useRef(settings.analysis);
+  useEffect(() => {
+    if (analysisSetting.current === settings.analysis) return;
+    analysisSetting.current = settings.analysis;
+    if (!livePausedRef.current) setLiveRunning(settings.analysis);
+  }, [settings.analysis, setLiveRunning]);
   const { start: startReviewRun } = review;
 
   // The review uses its own engine; pause live analysis meanwhile so they don't compete
@@ -60,9 +76,24 @@ export default function App() {
   useEffect(() => {
     if (livePaused && review.status !== 'running') {
       setLivePaused(false);
-      setLiveRunning(true);
+      setLiveRunning(settings.analysis);
     }
-  }, [livePaused, review.status, setLiveRunning]);
+  }, [livePaused, review.status, setLiveRunning, settings.analysis]);
+
+  /* ---------------- move sounds ---------------- */
+
+  const playSound = useMoveSound(settings.sound);
+  const prevPly = useRef(game.ply);
+  useEffect(() => {
+    const delta = game.ply - prevPly.current;
+    prevPly.current = game.ply;
+    if (delta === 1) {
+      const m = moves[game.ply - 1];
+      if (m) playSound(soundKind(m.san));
+    } else if (delta === -1) {
+      playSound('move');
+    } // bigger jumps (import, first / last, a new game) are silent
+  }, [game.ply, moves, playSound]);
 
   /* ---------------- review result for the board / list ---------------- */
 
@@ -159,9 +190,19 @@ export default function App() {
 
   return (
     <div className="app">
-      <AppBar onImport={openImport} onSettings={openSettings} />
+      <AppBar onSettings={openSettings} />
 
       <main className="screen">
+        <EvalBar
+          line={engine.evalLine}
+          stale={engine.evalStale}
+          status={status}
+          orientation={orientation}
+          enabled={engine.enabled}
+          phase={engine.phase}
+          pausedByReview={livePaused}
+        />
+
         <EngineLine fen={game.fen} engine={engine} status={status} pausedByReview={livePaused} />
 
         <PlayerBar
@@ -172,15 +213,6 @@ export default function App() {
         />
 
         <div className="board-row">
-          <EvalBar
-            line={engine.evalLine}
-            stale={engine.evalStale}
-            status={status}
-            orientation={orientation}
-            enabled={engine.enabled}
-            phase={engine.phase}
-            pausedByReview={livePaused}
-          />
           <ChessBoard
             fen={game.fen}
             orientation={orientation}
@@ -200,25 +232,26 @@ export default function App() {
           active={isActive(bottomColor)}
         />
 
+        {reviewResult && <MoveFeedback result={reviewResult} ply={game.ply} onSeek={game.goTo} />}
+
         <MoveList
           moves={moves}
           marks={marks}
           ply={game.ply}
           startFullmove={game.startFullmove}
           onSelect={game.goTo}
-        />
-
-        {reviewResult && <MoveFeedback result={reviewResult} ply={game.ply} onSeek={game.goTo} />}
-
-        <BottomBar
           canPrev={game.canPrev}
           canNext={game.canNext}
+          onPrev={goPrev}
+          onNext={goNext}
+        />
+
+        <BottomBar
           reviewPercent={reviewPercent}
           onOptions={openOptions}
           onNew={handleReset}
           onReview={openReview}
-          onPrev={goPrev}
-          onNext={goNext}
+          onImport={openImport}
         />
       </main>
 

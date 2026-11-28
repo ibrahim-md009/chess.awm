@@ -1,4 +1,5 @@
-import { CLASS_META, MISTAKE_CLASSES, findMoveByClass } from '../utils/classification.js';
+import ClassIcon from './ClassIcon.jsx';
+import { MISTAKE_CLASSES, findMoveByClass } from '../utils/classification.js';
 import { formatScore } from '../utils/analysis.js';
 import { ar } from '../i18n/ar.js';
 
@@ -16,13 +17,7 @@ export default function MoveFeedback({ result, ply, onSeek }) {
       <div className="feedback-card" aria-live="polite">
         {move ? (
           <>
-            <span
-              className="feedback-badge"
-              style={{ background: CLASS_META[move.classification].color }}
-              aria-hidden="true"
-            >
-              {CLASS_META[move.classification].symbol}
-            </span>
+            <ClassIcon classification={move.classification} size={26} />
             <span className="feedback-text">
               <strong dir="ltr">{move.san}</strong> {ar.review.classifications[move.classification]}
               <span className="muted">

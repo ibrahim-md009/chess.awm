@@ -5,7 +5,7 @@ Import a game, watch Stockfish evaluate every position live, and run a full-game
 move classifications (Brilliant … Blunder), per-player accuracy and statistics.
 Everything runs in the browser.
 
-**Status: Phase 6 follow-up (mobile layout modelled on the Chess.com app screenshot), version 1.2.0.**
+**Status: Phase 6 follow-up (Game Review layout, icons, settings, sounds), version 1.3.0.**
 
 ## Requirements
 
@@ -38,23 +38,25 @@ single-threaded, so no special headers (COOP/COEP) are needed.
 
 ## The interface
 
-One column, board first, laid out like the Chess.com mobile analysis screen (dark `#262522`
-background, wood board, green accents). Top to bottom:
+One column, board first, laid out like the Chess.com mobile Game Review screen (dark background,
+wood board, green accents). Top to bottom:
 
-- **Top bar** (icons only): import (left, opens the PGN / FEN dialog), title, settings (right).
-- **Engine line**: score, depth, best move; also loading / error + retry / paused-during-review and
-  check / game-over messages.
-- **Player strip**, the **board** (edge to edge, wood colours, coordinates inside the squares),
-  **player strip**. A 6 px evaluation bar is drawn over the board's left edge, so the board keeps
-  the full width. It follows the live engine and board flipping.
-- **Move strip**: one row with a chevron at each end that scrolls it. The current move is kept in
-  view. After a review, marks appear on the moves and a one-line verdict (with previous / next
-  mistake buttons) appears under the strip.
-- **Bottom bar**: **Options** (flip board, undo, first move, last move), **New** (new game), the
-  raised green **review** button (opens the game-review dialog; shows the percentage while a review
-  runs), **Back** and **Forward** (press and hold to scrub through the game).
+- **Top bar**: the title and the **settings** button (nothing else).
+- **Evaluation bar**: a full-width horizontal bar with the live score written on it (e.g. `+0.21`,
+  `#3`, `1-0`). The colour of the player at the bottom of the board is on the left. It keeps the last
+  evaluation (dimmed) while a new position is searched.
+- **Engine line**: depth and the engine's best move; also loading / stopped / error + retry /
+  paused-during-review and check / game-over messages.
+- **Player strip**, the **board** (edge to edge, coordinates inside the squares), **player strip**.
+- After a review, a one-line verdict for the current move (with its badge) and previous / next
+  mistake buttons.
+- **Move strip**: one row of moves. The chevrons at each end step back / forward one move; hold them
+  to scrub through the game. The current move is underlined and kept in view.
+- **Bottom bar**: **Options** (flip board, undo, first move, last move), **New** (new game),
+  **Review** (opens the game-review dialog; shows the percentage while a review runs) and the wide
+  green **PGN** button (opens the import dialog).
 
-One Stockfish engine analyses continuously at depth 18 and follows every position.
+One Stockfish engine analyses continuously and follows every position.
 
 ### Import dialog
 
@@ -67,8 +69,13 @@ Saved in this browser (localStorage):
 
 | Setting | Default | Notes |
 |---|---|---|
+| Live analysis | on | Switches the continuous engine on / off (saves battery). |
+| Engine depth | 18 | 8–30. Higher is stronger and slower. Applies to live analysis. |
 | Show best-move arrow | **off** | Display only. The engine keeps analysing and the evaluation bar keeps updating whether the arrow is shown or not. |
 | Board colours | Wood | Wood, Ocean, Classic, Walnut, Slate |
+| Move sounds | on | Move, capture and check / mate sounds. |
+
+The review depth (fast / balanced / accurate) is chosen inside the review dialog.
 
 ### Keyboard
 
@@ -91,7 +98,12 @@ Esc closes dialogs and the promotion picker.
 - Starts automatically and analyses continuously (depth 18) as moves are played or navigated
 - UCI wrapper with init timeout, error handling and retry
 - Evaluation (White's point of view, `#3` for mate), depth, speed, best move, principal variations
-- Retry button if the engine fails to start
+- Depth and on / off in Settings; a retry button if the engine fails to start
+
+**Sounds**
+- Move, capture and check / mate sounds when a move is played or you step one move forward or
+  back (`public/sounds/`, from the Lichess "sfx" set, AGPL-3.0-or-later, see
+  `public/sounds/LICENSE.txt`). They are not Chess.com's sounds. Toggle in Settings.
 
 **Game review**
 - Full-game analysis at a fixed depth (fast 10 / balanced 14 / accurate 18, 2 lines) with its own
@@ -99,8 +111,9 @@ Esc closes dialogs and the promotion picker.
 - Progress bar with estimated time left, and a cancel button; changing the game cancels the review
   and says so
 - Centipawn loss, move classification, player accuracy, statistics
-- Classification badges on the destination square of the move being viewed, and marks in the
-  move strip
+- Classification badges (image files in `public/badges/`, drawn to match the reference icon set) on
+  the destination square of the move being viewed, in the move strip, in the verdict row and in the
+  results table
 
 ### How moves are classified
 
@@ -134,9 +147,11 @@ volatility-weighted mean and a harmonic mean (the idea Lichess uses).
 - Only the main line is kept: there are no variations. PGN comments and variations are ignored.
 - The review covers the current move list; any change to it discards the review.
 - Only standard chess (no Chess960).
-- The evaluation graph was removed in Phase 6. In 1.1.1 the manual depth / line-count controls, the
-  engine start / stop switch, the "auto-start" setting and the on-screen FEN box were removed with the
-  panels. Live analysis is always on at depth 18.
+- The evaluation graph was removed in Phase 6.
+- Badge images exist for all ten reference icons, but the review only produces eight classes: the
+  "book" and "miss" icons are included in `public/badges/` and unused (no opening-book detection).
+- The number-of-lines (MultiPV) control for live analysis and the on-screen FEN box were removed in
+  1.1.x.
 
 ## Troubleshooting
 
@@ -157,7 +172,7 @@ src/
   App.jsx                      composition, keyboard, live-analysis <-> review hand-off
   components/
     AppBar, PlayerBar, EvalBar (thin), ChessBoard, EngineLine, MoveList (horizontal),
-    MoveFeedback, BottomBar, OptionsModal, SquareBadge, PromotionDialog, ReviewPanel,
+    MoveFeedback, StepButton, ClassIcon, BottomBar, OptionsModal, SquareBadge, PromotionDialog, ReviewPanel,
     Modal, ImportModal, SettingsModal, ErrorBoundary, icons
   engine/stockfishEngine.js    Web Worker + UCI wrapper, info-line parser
   engine/gameReview.js         full-game position evaluation (own engine, abortable)
@@ -165,6 +180,7 @@ src/
   hooks/useStockfish.js        live-analysis state (auto-start, retained evaluation)
   hooks/useGameReview.js       review state (start, progress, cancel, result)
   hooks/useSettings.js         personal settings (localStorage)
+  hooks/useMoveSound.js        move / capture / check sounds
   utils/chess.js               FEN/PGN parsing, move records, status helpers
   utils/analysis.js            score formatting, PV to SAN
   utils/review.js              win%, centipawn loss, classification, accuracy, stats
@@ -172,6 +188,13 @@ src/
   i18n/ar.js                   all Arabic strings
   styles/                      base.css (tokens), layout.css, components.css
 ```
+
+## Credits and licenses
+
+- Stockfish: GPL-3.0.
+- Move sounds: Lichess "sfx" set (Enigmahack), AGPL-3.0-or-later.
+- Badge images and UI icons: drawn for this project to resemble the reference screenshots; they are
+  not copies of any official asset.
 
 ## Roadmap
 
@@ -182,7 +205,8 @@ src/
 5. Final integration and polish ✔
 6. UI/UX redesign ✔
 6.1 Simplified, board-first mobile layout ✔
-6.2 Chess.com-app-style layout (this release)
+6.2 Chess.com-app-style layout ✔
+6.3 Game Review layout, badge images, settings, sounds (this release)
 
 ## License note
 
@@ -195,5 +219,5 @@ This project was written and reviewed by reading the code only (plus syntax pars
 checks that all imports, Arabic string keys and CSS classes resolve). It has **not** been installed,
 built or run by its author. The engine-loading path, the review scoring and all browser
 interactions (drag and drop, press-and-hold stepping, the evaluation bar, the horizontal move strip,
-modals, settings persistence, mobile layout and board size) are therefore untested. Please report anything that
+modals, settings persistence, sounds and autoplay rules on your phone, mobile layout and board size) are therefore untested. Please report anything that
 fails after `npm install` / `npm run dev`.
